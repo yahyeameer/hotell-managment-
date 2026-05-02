@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus } from "lucide-react";
 import { useHotel, Room } from "@/app/context/HotelContext";
+import { motion } from "framer-motion";
 
 export default function RoomsPage() {
   const { rooms, addRoom } = useHotel();
@@ -210,33 +211,43 @@ export default function RoomsPage() {
         </Badge>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-        {filteredRooms.map((room) => (
-          <Card key={room.id} className="glass border-border bg-muted/20 hover:bg-muted/40 transition-colors cursor-pointer group relative overflow-hidden">
-            <div className={`absolute top-0 left-0 w-full h-1 ${
-              room.status === 'Available' ? 'bg-primary' : 
-              room.status === 'Occupied' ? 'bg-destructive' : 
-              'bg-secondary'
-            }`}></div>
-            <CardContent className="p-4 flex flex-col items-center justify-center min-h-[120px]">
-              <div className="text-2xl font-bold text-foreground mb-1">{room.id}</div>
-              <div className="text-xs text-muted-foreground">{room.type}</div>
-              <Badge variant="outline" className={`mt-3 text-[10px] uppercase tracking-wider ${
-                room.status === 'Available' ? 'bg-primary/10 text-primary border-primary/20' : 
-                room.status === 'Occupied' ? 'bg-destructive/10 text-destructive border-destructive/20' : 
-                'bg-secondary/10 text-secondary border-secondary/20'
-              }`}>
-                {room.status}
-              </Badge>
-            </CardContent>
-          </Card>
+      <motion.div 
+        layout
+        className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4"
+      >
+        {filteredRooms.map((room, i) => (
+          <motion.div
+            key={room.id}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: i * 0.03 }}
+          >
+            <Card className="glass border-border bg-muted/20 hover:bg-muted/40 hover:scale-[1.02] transition-all cursor-pointer group relative overflow-hidden">
+              <div className={`absolute top-0 left-0 w-full h-1 ${
+                room.status === 'Available' ? 'bg-primary' : 
+                room.status === 'Occupied' ? 'bg-destructive' : 
+                'bg-secondary'
+              }`}></div>
+              <CardContent className="p-4 flex flex-col items-center justify-center min-h-[120px]">
+                <div className="text-2xl font-bold text-foreground mb-1">{room.id}</div>
+                <div className="text-xs text-muted-foreground">{room.type}</div>
+                <Badge variant="outline" className={`mt-3 text-[10px] uppercase tracking-wider ${
+                  room.status === 'Available' ? 'bg-primary/10 text-primary border-primary/20' : 
+                  room.status === 'Occupied' ? 'bg-destructive/10 text-destructive border-destructive/20' : 
+                  'bg-secondary/10 text-secondary border-secondary/20'
+                }`}>
+                  {room.status}
+                </Badge>
+              </CardContent>
+            </Card>
+          </motion.div>
         ))}
         {filteredRooms.length === 0 && (
           <div className="col-span-full py-12 text-center text-muted-foreground">
             No rooms found for this filter.
           </div>
         )}
-      </div>
+      </motion.div>
     </div>
   );
 }

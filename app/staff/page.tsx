@@ -162,12 +162,12 @@ export default function StaffPage() {
         </div>
       </div>
 
-      <div className="glass border border-border bg-muted/20 rounded-lg p-4">
-        <div className="flex flex-col sm:flex-row gap-4 mb-4">
+      <div className="glass border border-border/50 bg-muted/20 rounded-xl p-3 sm:p-4">
+        <div className="flex flex-col sm:flex-row gap-3 mb-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input 
-              placeholder="Search staff by name or role..." 
+              placeholder="Search staff..." 
               value={search}
               onChange={e => setSearch(e.target.value)}
               className="pl-9 bg-muted/40 border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-primary/50" 
@@ -175,7 +175,37 @@ export default function StaffPage() {
           </div>
         </div>
 
-        <div className="rounded-md border border-border overflow-x-auto">
+        {/* Mobile Card View */}
+        <div className="md:hidden space-y-3">
+          {filteredStaff.map((employee) => (
+            <div key={employee.id} className="mobile-card">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold shrink-0">
+                  {employee.name.charAt(0)}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <p className="font-semibold text-foreground text-sm truncate">{employee.name}</p>
+                    <Badge variant="outline" className={
+                      employee.status === 'Active' ? 'bg-primary/10 text-primary border-primary/20 shrink-0' : 
+                      'bg-white/5 text-muted-foreground border-border shrink-0'
+                    }>
+                      {employee.status}
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-0.5">{employee.role} · {employee.shift} Shift</p>
+                  <p className="text-xs text-muted-foreground mt-1">{employee.phone}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+          {filteredStaff.length === 0 && (
+            <div className="text-center py-12 text-muted-foreground text-sm">No staff found.</div>
+          )}
+        </div>
+
+        {/* Desktop Table View */}
+        <div className="hidden md:block rounded-md border border-border overflow-x-auto">
           <Table>
             <TableHeader className="bg-muted/40 whitespace-nowrap">
               <TableRow className="border-border hover:bg-transparent">

@@ -74,10 +74,8 @@ export default function SettingsPage() {
               <h3 className="font-semibold text-foreground">Current Roles</h3>
               
               <Dialog>
-                <DialogTrigger asChild>
-                  <Button size="sm" variant="outline" className="border-primary text-primary hover:bg-primary/10">
+                <DialogTrigger render={<Button size="sm" variant="outline" className="border-primary text-primary hover:bg-primary/10" />}>
                     + Generate New Role
-                  </Button>
                 </DialogTrigger>
                 <DialogContent className="bg-background border-border text-foreground">
                   <DialogHeader>

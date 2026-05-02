@@ -3,9 +3,30 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 
+// Payment methods used in Somalia
+export const PAYMENT_METHODS = [
+  { id: "zaad", label: "Zaad Pay", color: "#22c55e", icon: "📱" },
+  { id: "edahab", label: "eDahab Pay", color: "#3b82f6", icon: "💳" },
+  { id: "golis", label: "Golis Pay", color: "#f59e0b", icon: "📲" },
+  { id: "evc", label: "EVC Plus", color: "#ef4444", icon: "💸" },
+  { id: "cash_usd", label: "Cash (USD)", color: "#10b981", icon: "💵" },
+  { id: "cash_sos", label: "Cash (SOS)", color: "#8b5cf6", icon: "💰" },
+] as const;
+
+export type PaymentMethodId = typeof PAYMENT_METHODS[number]["id"];
+
 export type Room = { id: string; type: string; status: "Available" | "Occupied" | "Maintenance"; price: number };
-export type Booking = { id: string; guest: string; room: string; checkIn: string; checkOut: string; amount: number; status: "Paid" | "Pending" };
-export type Expense = { id: string; date: string; description: string; category: string; amount: number };
+export type Booking = { 
+  id: string; guest: string; room: string; checkIn: string; checkOut: string; 
+  amount: number; status: "Paid" | "Pending"; 
+  paymentMethod: PaymentMethodId;
+  currency: "USD" | "SOS";
+};
+export type Expense = { 
+  id: string; date: string; description: string; category: string; amount: number;
+  paymentMethod: PaymentMethodId;
+  currency: "USD" | "SOS";
+};
 export type Guest = { id: string; name: string; phone: string; email: string; totalStays: number; lifetimeValue: number };
 export type Staff = { id: string; name: string; role: string; phone: string; status: "Active" | "Off Duty"; shift: string };
 
@@ -34,6 +55,8 @@ interface HotelContextType {
   addStaff: (employee: Staff) => void;
 
   formatCurrency: (usdAmount: number) => string;
+  formatAmount: (amount: number, cur: "USD" | "SOS") => string;
+  toUSD: (amount: number, cur: "USD" | "SOS") => number;
   isLoading: boolean;
 }
 
@@ -87,8 +110,8 @@ export function HotelProvider({ children }: { children: React.ReactNode }) {
           name: g.full_name,
           phone: g.phone || "-",
           email: "-",
-          totalStays: 0, // Calculated ideally
-          lifetimeValue: 0 // Calculated ideally
+          totalStays: 0,
+          lifetimeValue: 0
         })));
       }
 
@@ -102,7 +125,9 @@ export function HotelProvider({ children }: { children: React.ReactNode }) {
           checkIn: b.check_in,
           checkOut: b.check_out,
           amount: b.total_amount,
-          status: b.paid ? "Paid" : "Pending"
+          status: b.paid ? "Paid" : "Pending",
+          paymentMethod: b.payment_method || "cash_usd",
+          currency: b.currency || "USD"
         })));
       }
 
@@ -114,7 +139,9 @@ export function HotelProvider({ children }: { children: React.ReactNode }) {
           date: e.date,
           description: e.description || "",
           category: e.category,
-          amount: e.amount
+          amount: e.amount,
+          paymentMethod: e.payment_method || "cash_usd",
+          currency: e.currency || "USD"
         })));
       }
 
@@ -139,12 +166,9 @@ export function HotelProvider({ children }: { children: React.ReactNode }) {
 
   // Mutations
   const addRoom = async (room: Room) => {
-    // Optimistic UI
     setRooms([...rooms, room]);
-    
-    // DB
     await supabase.from('rooms').insert({
-      id: room.id.includes('-') ? room.id : undefined, // let postgres generate if simple id
+      id: room.id.includes('-') ? room.id : undefined,
       hotel_id: HOTEL_ID,
       room_number: room.id,
       type: room.type,
@@ -161,15 +185,16 @@ export function HotelProvider({ children }: { children: React.ReactNode }) {
   const addBooking = async (booking: Booking) => {
     setBookings([booking, ...bookings]);
     updateRoomStatus(booking.room, "Occupied");
-
     await supabase.from('bookings').insert({
       hotel_id: HOTEL_ID,
-      guest_id: null, // would need real UUID in prod or skip strict relations for MVP
-      room_id: null, // same
+      guest_id: null,
+      room_id: null,
       check_in: booking.checkIn,
       check_out: booking.checkOut,
       total_amount: booking.amount,
-      paid: booking.status === 'Paid'
+      paid: booking.status === 'Paid',
+      payment_method: booking.paymentMethod,
+      currency: booking.currency
     });
   };
 
@@ -180,7 +205,9 @@ export function HotelProvider({ children }: { children: React.ReactNode }) {
       category: expense.category,
       description: expense.description,
       amount: expense.amount,
-      date: expense.date
+      date: expense.date,
+      payment_method: expense.paymentMethod,
+      currency: expense.currency
     });
   };
 
@@ -211,11 +238,23 @@ export function HotelProvider({ children }: { children: React.ReactNode }) {
     }
   }, [hotelName, currency, isLoading, supabase]);
 
+  // Convert amount to USD equivalent
+  const toUSD = (amount: number, cur: "USD" | "SOS"): number => {
+    if (cur === "SOS") return amount / exchangeRate;
+    return amount;
+  };
+
   const formatCurrency = (usdAmount: number) => {
     if (currency === "USD") {
       return `$${usdAmount.toLocaleString()}`;
     }
     return `${(usdAmount * exchangeRate).toLocaleString()} SOS`;
+  };
+
+  // Format any amount with its native currency
+  const formatAmount = (amount: number, cur: "USD" | "SOS"): string => {
+    if (cur === "USD") return `$${amount.toLocaleString()}`;
+    return `${amount.toLocaleString()} SOS`;
   };
 
   return (
@@ -226,7 +265,7 @@ export function HotelProvider({ children }: { children: React.ReactNode }) {
       expenses, addExpense,
       guests, addGuest,
       staff, addStaff,
-      formatCurrency,
+      formatCurrency, formatAmount, toUSD,
       isLoading
     }}>
       {children}

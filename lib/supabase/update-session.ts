@@ -20,7 +20,13 @@ export async function updateSession(request: NextRequest) {
             request,
           })
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
+            supabaseResponse.cookies.set(name, value, {
+              ...options,
+              // Persist session for 1 year (sign in forever)
+              maxAge: 60 * 60 * 24 * 365,
+              sameSite: 'lax',
+              secure: process.env.NODE_ENV === 'production',
+            })
           )
         },
       },
@@ -36,7 +42,6 @@ export async function updateSession(request: NextRequest) {
     !request.nextUrl.pathname.startsWith('/login') &&
     !request.nextUrl.pathname.startsWith('/auth')
   ) {
-    // no user, potentially respond by redirecting the user to the login page
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)

@@ -10,11 +10,13 @@ import { SidebarContent } from "./Sidebar";
 import { createClient } from "@/lib/supabase/client";
 import { LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useHotel } from "@/app/context/HotelContext";
 
 export function Header() {
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const supabase = createClient();
   const router = useRouter();
+  const { hotelName } = useHotel();
 
   useEffect(() => {
     const getUser = async () => {
@@ -31,10 +33,11 @@ export function Header() {
   };
 
   return (
-    <header className="h-16 flex items-center justify-between px-4 md:px-6 glass border-b z-10 sticky top-0 w-full">
-      <div className="flex items-center gap-4 w-full">
+    <header className="h-14 md:h-16 flex items-center justify-between px-3 md:px-6 glass border-b z-10 sticky top-0 w-full">
+      <div className="flex items-center gap-3 w-full">
+        {/* Mobile hamburger */}
         <Sheet>
-          <SheetTrigger render={<Button variant="ghost" size="icon" className="md:hidden text-muted-foreground hover:text-foreground shrink-0" />}>
+          <SheetTrigger render={<Button variant="ghost" size="icon" className="md:hidden text-muted-foreground hover:text-foreground shrink-0 !min-w-10 !min-h-10" />}>
               <Menu className="w-5 h-5" />
           </SheetTrigger>
           <SheetContent side="left" className="w-64 p-0 bg-background border-border">
@@ -43,6 +46,10 @@ export function Header() {
           </SheetContent>
         </Sheet>
         
+        {/* Mobile hotel name */}
+        <span className="md:hidden text-sm font-bold text-foreground truncate">{hotelName}</span>
+
+        {/* Desktop search */}
         <div className="relative hidden md:block w-full max-w-sm">
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <input 
@@ -52,14 +59,15 @@ export function Header() {
           />
         </div>
       </div>
-      <div className="flex items-center gap-2 md:gap-4 shrink-0">
+      <div className="flex items-center gap-1.5 md:gap-4 shrink-0">
         <ThemeToggle />
-        <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground relative">
+        <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground relative !min-w-10 !min-h-10">
           <Bell className="w-5 h-5" />
           <span className="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full animate-pulse shadow-[0_0_5px_var(--primary)]"></span>
         </Button>
-        <div className="flex items-center gap-3 border-l border-border pl-3 md:pl-4 ml-1 md:ml-2">
-          <div className="hidden md:flex flex-col items-end">
+        {/* Desktop user info */}
+        <div className="hidden md:flex items-center gap-3 border-l border-border pl-4 ml-2">
+          <div className="flex flex-col items-end">
             <span className="text-sm font-medium text-foreground">{userEmail ? userEmail.split('@')[0] : "Admin User"}</span>
             <span className="text-xs text-muted-foreground">{userEmail ? "Staff" : "Manager"}</span>
           </div>
@@ -71,6 +79,14 @@ export function Header() {
           <Button variant="ghost" size="icon" onClick={handleSignOut} className="text-muted-foreground hover:text-destructive transition-colors ml-1" title="Sign out">
             <LogOut className="w-4 h-4" />
           </Button>
+        </div>
+        {/* Mobile avatar + sign out */}
+        <div className="md:hidden flex items-center gap-1">
+          <Avatar className="w-7 h-7 border border-primary/20">
+            <AvatarFallback className="bg-primary/20 text-primary font-medium text-[10px]">
+              {userEmail ? userEmail.charAt(0).toUpperCase() : "AD"}
+            </AvatarFallback>
+          </Avatar>
         </div>
       </div>
     </header>
