@@ -1,8 +1,87 @@
 -- ==========================================
 -- HOTEL MANAGEMENT SYSTEM - DATABASE SETUP
+-- Run this in Supabase SQL Editor (one time)
 -- ==========================================
 
--- 1. Create Roles and Permissions Tables
+-- 1. Hotels Table (settings/branding)
+CREATE TABLE IF NOT EXISTS hotels (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL DEFAULT 'Hargeisa Grand',
+  currency_primary TEXT NOT NULL DEFAULT 'USD',
+  exchange_rate NUMERIC DEFAULT 8500,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Insert default hotel row
+INSERT INTO hotels (id, name, currency_primary) 
+VALUES ('00000000-0000-0000-0000-000000000000', 'Hargeisa Grand', 'USD')
+ON CONFLICT (id) DO NOTHING;
+
+-- 2. Rooms Table
+CREATE TABLE IF NOT EXISTS rooms (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  hotel_id UUID REFERENCES hotels(id) ON DELETE CASCADE NOT NULL,
+  room_number TEXT NOT NULL,
+  type TEXT NOT NULL DEFAULT 'Hal Qol',
+  status TEXT NOT NULL DEFAULT 'available',
+  price_per_night NUMERIC(10, 2) NOT NULL DEFAULT 40,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(hotel_id, room_number)
+);
+
+-- 3. Guests Table
+CREATE TABLE IF NOT EXISTS guests (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  hotel_id UUID REFERENCES hotels(id) ON DELETE CASCADE NOT NULL,
+  full_name TEXT NOT NULL,
+  phone TEXT,
+  email TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 4. Bookings Table
+CREATE TABLE IF NOT EXISTS bookings (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  hotel_id UUID REFERENCES hotels(id) ON DELETE CASCADE NOT NULL,
+  guest_id UUID REFERENCES guests(id) ON DELETE SET NULL,
+  room_id TEXT, -- stores room_number for simplicity
+  check_in DATE NOT NULL,
+  check_out DATE NOT NULL,
+  total_amount NUMERIC(10, 2) NOT NULL DEFAULT 0,
+  paid BOOLEAN NOT NULL DEFAULT false,
+  payment_method TEXT DEFAULT 'cash_usd',
+  currency TEXT DEFAULT 'USD',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 5. Expenses Table
+CREATE TABLE IF NOT EXISTS expenses (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  hotel_id UUID REFERENCES hotels(id) ON DELETE CASCADE NOT NULL,
+  date DATE NOT NULL DEFAULT CURRENT_DATE,
+  description TEXT,
+  category TEXT NOT NULL DEFAULT 'Utilities',
+  amount NUMERIC(10, 2) NOT NULL DEFAULT 0,
+  payment_method TEXT DEFAULT 'cash_usd',
+  currency TEXT DEFAULT 'USD',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 6. Staff Table
+CREATE TABLE IF NOT EXISTS staff (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  hotel_id UUID REFERENCES hotels(id) ON DELETE CASCADE NOT NULL,
+  user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  full_name TEXT NOT NULL,
+  email TEXT,
+  phone TEXT,
+  role TEXT DEFAULT 'Receptionist',
+  shift TEXT DEFAULT 'Morning',
+  status TEXT DEFAULT 'active',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 7. Roles & Permissions (optional, for future use)
 CREATE TABLE IF NOT EXISTS roles (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL UNIQUE,
@@ -20,53 +99,33 @@ CREATE TABLE IF NOT EXISTS permissions (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Insert Default Roles
 INSERT INTO roles (name, description) VALUES
   ('Manager', 'Full system access including reports and staff management'),
   ('Receptionist', 'Can manage bookings, guests, and payments'),
   ('Housekeeping', 'Can view and update room statuses')
 ON CONFLICT (name) DO NOTHING;
 
--- 2. Create Staff Table (Links to Supabase Auth)
-CREATE TABLE IF NOT EXISTS staff (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL, -- Link to Supabase Auth
-  name TEXT NOT NULL,
-  email TEXT UNIQUE,
-  phone TEXT,
-  role_id UUID REFERENCES roles(id),
-  shift TEXT DEFAULT 'Morning',
-  status TEXT DEFAULT 'Active',
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
--- 3. Create Rooms Table for Bulk & Single Rooms
-CREATE TABLE IF NOT EXISTS rooms (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  room_number TEXT NOT NULL UNIQUE,
-  type TEXT NOT NULL, -- e.g., 'Hal Qol', 'Qol Double', 'Qol Qoyska', 'Qol VIP'
-  status TEXT DEFAULT 'Available',
-  price DECIMAL(10, 2) NOT NULL,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
 
 -- ==========================================
 -- ROW LEVEL SECURITY (RLS) POLICIES
 -- ==========================================
 
--- Enable RLS on all tables
+ALTER TABLE hotels ENABLE ROW LEVEL SECURITY;
+ALTER TABLE rooms ENABLE ROW LEVEL SECURITY;
+ALTER TABLE guests ENABLE ROW LEVEL SECURITY;
+ALTER TABLE bookings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE expenses ENABLE ROW LEVEL SECURITY;
+ALTER TABLE staff ENABLE ROW LEVEL SECURITY;
 ALTER TABLE roles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE permissions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE staff ENABLE ROW LEVEL SECURITY;
-ALTER TABLE rooms ENABLE ROW LEVEL SECURITY;
 
--- Create open policies for now (so the front-end can read/write freely until fully locked down)
-CREATE POLICY "Allow public read access to roles" ON roles FOR SELECT USING (true);
-CREATE POLICY "Allow public read access to permissions" ON permissions FOR SELECT USING (true);
-CREATE POLICY "Allow public read access to staff" ON staff FOR SELECT USING (true);
-CREATE POLICY "Allow public read access to rooms" ON rooms FOR SELECT USING (true);
-
--- Allow authenticated users to insert/update data
-CREATE POLICY "Allow auth insert to staff" ON staff FOR INSERT WITH CHECK (auth.role() = 'authenticated');
-CREATE POLICY "Allow auth insert to rooms" ON rooms FOR INSERT WITH CHECK (auth.role() = 'authenticated');
-CREATE POLICY "Allow auth update to rooms" ON rooms FOR UPDATE USING (auth.role() = 'authenticated');
+-- Allow authenticated users full CRUD on all tables
+-- (Locked down per-role in the app layer for MVP)
+CREATE POLICY "auth_all_hotels" ON hotels FOR ALL USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
+CREATE POLICY "auth_all_rooms" ON rooms FOR ALL USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
+CREATE POLICY "auth_all_guests" ON guests FOR ALL USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
+CREATE POLICY "auth_all_bookings" ON bookings FOR ALL USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
+CREATE POLICY "auth_all_expenses" ON expenses FOR ALL USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
+CREATE POLICY "auth_all_staff" ON staff FOR ALL USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
+CREATE POLICY "auth_read_roles" ON roles FOR SELECT USING (true);
+CREATE POLICY "auth_read_permissions" ON permissions FOR SELECT USING (true);

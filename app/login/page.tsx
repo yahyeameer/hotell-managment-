@@ -2,7 +2,7 @@ import { login } from "./actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { BedDouble } from "lucide-react";
+import { Logo } from "@/components/ui/logo";
 
 export default async function LoginPage(props: { searchParams: Promise<{ message: string }> }) {
   const searchParams = await props.searchParams;
@@ -13,9 +13,7 @@ export default async function LoginPage(props: { searchParams: Promise<{ message
       
       <Card className="w-full max-w-md glass border-border shadow-2xl relative z-10">
         <CardHeader className="space-y-3 text-center pb-6">
-          <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-2">
-            <BedDouble className="w-6 h-6 text-primary" />
-          </div>
+          <Logo hotelName="Hargeisa Grand Hotel" iconSize="lg" showText={false} className="mx-auto mb-2" />
           <CardTitle className="text-2xl font-bold tracking-tight">Welcome Back</CardTitle>
           <CardDescription className="text-muted-foreground">
             Sign in to the Hotel Management System

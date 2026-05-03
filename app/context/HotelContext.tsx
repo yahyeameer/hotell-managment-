@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 // Payment methods used in Somalia
@@ -37,6 +37,10 @@ interface HotelContextType {
   setCurrency: (curr: string) => void;
   exchangeRate: number;
   setExchangeRate: (rate: number) => void;
+  logoUrl: string | null;
+  setLogoUrl: (url: string | null) => void;
+  currentUserRole: "Admin" | "Staff";
+  setCurrentUserRole: (role: "Admin" | "Staff") => void;
   
   rooms: Room[];
   addRoom: (room: Room) => void;
@@ -66,11 +70,28 @@ const HotelContext = createContext<HotelContextType | undefined>(undefined);
 const HOTEL_ID = "00000000-0000-0000-0000-000000000000";
 
 export function HotelProvider({ children }: { children: React.ReactNode }) {
-  const supabase = createClient();
+  // Create supabase client once and store in a ref to prevent re-renders
+  const supabaseRef = useRef(createClient());
+  const supabase = supabaseRef.current;
   
   const [hotelName, setHotelName] = useState("Hargeisa Grand");
   const [currency, setCurrency] = useState("USD");
   const [exchangeRate, setExchangeRate] = useState(8500);
+  const [logoUrl, setLogoUrlState] = useState<string | null>(null);
+  const [currentUserRole, setCurrentUserRole] = useState<"Admin" | "Staff">("Admin");
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedLogo = localStorage.getItem('hotel_logo');
+      if (savedLogo) setLogoUrlState(savedLogo);
+    }
+  }, []);
+
+  const setLogoUrl = useCallback((url: string | null) => {
+    setLogoUrlState(url);
+    if (url) localStorage.setItem('hotel_logo', url);
+    else localStorage.removeItem('hotel_logo');
+  }, []);
 
   const [rooms, setRooms] = useState<Room[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -79,116 +100,137 @@ export function HotelProvider({ children }: { children: React.ReactNode }) {
   const [staff, setStaff] = useState<Staff[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Initial Data Fetch
+  // Initial Data Fetch - runs once on mount
   useEffect(() => {
+    let cancelled = false;
+    
     async function fetchData() {
       setIsLoading(true);
       
-      // Fetch Hotel Settings
-      const { data: hotelData } = await supabase.from('hotels').select('*').eq('id', HOTEL_ID).single();
-      if (hotelData) {
-        setHotelName(hotelData.name);
-        setCurrency(hotelData.currency_primary);
+      try {
+        // Fetch Hotel Settings
+        const { data: hotelData, error: hotelError } = await supabase
+          .from('hotels').select('*').eq('id', HOTEL_ID).single();
+        
+        if (!cancelled && hotelData && !hotelError) {
+          setHotelName(hotelData.name);
+          if (hotelData.currency_primary) setCurrency(hotelData.currency_primary);
+        }
+
+        // Fetch Rooms
+        const { data: roomsData } = await supabase
+          .from('rooms').select('*').eq('hotel_id', HOTEL_ID);
+        if (!cancelled && roomsData) {
+          setRooms(roomsData.map(r => ({
+            id: r.room_number || r.id,
+            type: r.type,
+            status: r.status === 'occupied' ? 'Occupied' : r.status === 'maintenance' ? 'Maintenance' : 'Available',
+            price: r.price_per_night
+          })));
+        }
+
+        // Fetch Guests
+        const { data: guestsData } = await supabase
+          .from('guests').select('*').eq('hotel_id', HOTEL_ID);
+        if (!cancelled && guestsData) {
+          setGuests(guestsData.map(g => ({
+            id: g.id,
+            name: g.full_name,
+            phone: g.phone || "-",
+            email: g.email || "-",
+            totalStays: 0,
+            lifetimeValue: 0
+          })));
+        }
+
+        // Fetch Bookings
+        const { data: bookingsData } = await supabase
+          .from('bookings').select('*, guests(full_name)').eq('hotel_id', HOTEL_ID);
+        if (!cancelled && bookingsData) {
+          setBookings(bookingsData.map(b => ({
+            id: b.id,
+            guest: b.guests?.full_name || 'Unknown Guest',
+            room: b.room_id || '-',
+            checkIn: b.check_in,
+            checkOut: b.check_out,
+            amount: b.total_amount,
+            status: b.paid ? "Paid" : "Pending",
+            paymentMethod: (b.payment_method || "cash_usd") as PaymentMethodId,
+            currency: (b.currency || "USD") as "USD" | "SOS"
+          })));
+        }
+
+        // Fetch Expenses
+        const { data: expensesData } = await supabase
+          .from('expenses').select('*').eq('hotel_id', HOTEL_ID);
+        if (!cancelled && expensesData) {
+          setExpenses(expensesData.map(e => ({
+            id: e.id,
+            date: e.date,
+            description: e.description || "",
+            category: e.category,
+            amount: e.amount,
+            paymentMethod: (e.payment_method || "cash_usd") as PaymentMethodId,
+            currency: (e.currency || "USD") as "USD" | "SOS"
+          })));
+        }
+
+        // Fetch Staff
+        const { data: staffData } = await supabase
+          .from('staff').select('*').eq('hotel_id', HOTEL_ID);
+        if (!cancelled && staffData) {
+          setStaff(staffData.map(s => ({
+            id: s.id,
+            name: s.full_name,
+            role: s.role || "Receptionist",
+            phone: s.phone || "",
+            status: s.status === 'active' ? 'Active' : 'Off Duty',
+            shift: s.shift || "Morning"
+          })));
+        }
+      } catch (err) {
+        console.error("Error fetching hotel data:", err);
       }
 
-      // Fetch Rooms
-      const { data: roomsData } = await supabase.from('rooms').select('*').eq('hotel_id', HOTEL_ID);
-      if (roomsData) {
-        setRooms(roomsData.map(r => ({
-          id: r.id,
-          type: r.type,
-          status: r.status === 'occupied' ? 'Occupied' : r.status === 'maintenance' ? 'Maintenance' : 'Available',
-          price: r.price_per_night
-        })));
-      }
-
-      // Fetch Guests
-      const { data: guestsData } = await supabase.from('guests').select('*').eq('hotel_id', HOTEL_ID);
-      if (guestsData) {
-        setGuests(guestsData.map(g => ({
-          id: g.id,
-          name: g.full_name,
-          phone: g.phone || "-",
-          email: "-",
-          totalStays: 0,
-          lifetimeValue: 0
-        })));
-      }
-
-      // Fetch Bookings
-      const { data: bookingsData } = await supabase.from('bookings').select('*, guests(full_name)').eq('hotel_id', HOTEL_ID);
-      if (bookingsData) {
-        setBookings(bookingsData.map(b => ({
-          id: b.id,
-          guest: b.guests?.full_name || b.guest_id,
-          room: b.room_id,
-          checkIn: b.check_in,
-          checkOut: b.check_out,
-          amount: b.total_amount,
-          status: b.paid ? "Paid" : "Pending",
-          paymentMethod: b.payment_method || "cash_usd",
-          currency: b.currency || "USD"
-        })));
-      }
-
-      // Fetch Expenses
-      const { data: expensesData } = await supabase.from('expenses').select('*').eq('hotel_id', HOTEL_ID);
-      if (expensesData) {
-        setExpenses(expensesData.map(e => ({
-          id: e.id,
-          date: e.date,
-          description: e.description || "",
-          category: e.category,
-          amount: e.amount,
-          paymentMethod: e.payment_method || "cash_usd",
-          currency: e.currency || "USD"
-        })));
-      }
-
-      // Fetch Staff
-      const { data: staffData } = await supabase.from('staff').select('*').eq('hotel_id', HOTEL_ID);
-      if (staffData) {
-        setStaff(staffData.map(s => ({
-          id: s.id,
-          name: s.full_name,
-          role: s.role,
-          phone: s.phone || "",
-          status: s.status === 'active' ? 'Active' : 'Off Duty',
-          shift: "Morning"
-        })));
-      }
-
-      setIsLoading(false);
+      if (!cancelled) setIsLoading(false);
     }
     
     fetchData();
-  }, [supabase]);
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Mutations
-  const addRoom = async (room: Room) => {
-    setRooms([...rooms, room]);
-    await supabase.from('rooms').insert({
-      id: room.id.includes('-') ? room.id : undefined,
+  const addRoom = useCallback(async (room: Room) => {
+    setRooms(prev => [...prev, room]);
+    const { error } = await supabase.from('rooms').insert({
       hotel_id: HOTEL_ID,
       room_number: room.id,
       type: room.type,
       price_per_night: room.price,
       status: room.status.toLowerCase()
     });
-  };
+    if (error) console.error("addRoom error:", error.message);
+  }, [supabase]);
 
-  const updateRoomStatus = async (id: string, status: Room["status"]) => {
-    setRooms(rooms.map(r => r.id === id ? { ...r, status } : r));
-    await supabase.from('rooms').update({ status: status.toLowerCase() }).match({ room_number: id, hotel_id: HOTEL_ID });
-  };
+  const updateRoomStatus = useCallback(async (id: string, status: Room["status"]) => {
+    setRooms(prev => prev.map(r => r.id === id ? { ...r, status } : r));
+    const { error } = await supabase.from('rooms')
+      .update({ status: status.toLowerCase() })
+      .eq('hotel_id', HOTEL_ID)
+      .eq('room_number', id);
+    if (error) console.error("updateRoomStatus error:", error.message);
+  }, [supabase]);
 
-  const addBooking = async (booking: Booking) => {
-    setBookings([booking, ...bookings]);
+  const addBooking = useCallback(async (booking: Booking) => {
+    setBookings(prev => [booking, ...prev]);
+    // Mark the room as occupied
     updateRoomStatus(booking.room, "Occupied");
-    await supabase.from('bookings').insert({
+    
+    const { error } = await supabase.from('bookings').insert({
       hotel_id: HOTEL_ID,
       guest_id: null,
-      room_id: null,
+      room_id: booking.room,
       check_in: booking.checkIn,
       check_out: booking.checkOut,
       total_amount: booking.amount,
@@ -196,11 +238,12 @@ export function HotelProvider({ children }: { children: React.ReactNode }) {
       payment_method: booking.paymentMethod,
       currency: booking.currency
     });
-  };
+    if (error) console.error("addBooking error:", error.message);
+  }, [supabase, updateRoomStatus]);
 
-  const addExpense = async (expense: Expense) => {
-    setExpenses([expense, ...expenses]);
-    await supabase.from('expenses').insert({
+  const addExpense = useCallback(async (expense: Expense) => {
+    setExpenses(prev => [expense, ...prev]);
+    const { error } = await supabase.from('expenses').insert({
       hotel_id: HOTEL_ID,
       category: expense.category,
       description: expense.description,
@@ -209,57 +252,77 @@ export function HotelProvider({ children }: { children: React.ReactNode }) {
       payment_method: expense.paymentMethod,
       currency: expense.currency
     });
-  };
+    if (error) console.error("addExpense error:", error.message);
+  }, [supabase]);
 
-  const addGuest = async (guest: Guest) => {
-    setGuests([guest, ...guests]);
-    await supabase.from('guests').insert({
+  const addGuest = useCallback(async (guest: Guest) => {
+    setGuests(prev => [guest, ...prev]);
+    const { error } = await supabase.from('guests').insert({
       hotel_id: HOTEL_ID,
       full_name: guest.name,
-      phone: guest.phone
+      phone: guest.phone === "-" ? null : guest.phone,
+      email: guest.email === "-" ? null : guest.email
     });
-  };
+    if (error) console.error("addGuest error:", error.message);
+  }, [supabase]);
 
-  const addStaff = async (employee: Staff) => {
-    setStaff([employee, ...staff]);
-    await supabase.from('staff').insert({
+  const addStaff = useCallback(async (employee: Staff) => {
+    setStaff(prev => [employee, ...prev]);
+    const { error } = await supabase.from('staff').insert({
       hotel_id: HOTEL_ID,
       full_name: employee.name,
       role: employee.role,
-      phone: employee.phone,
+      phone: employee.phone || null,
+      shift: employee.shift,
       status: employee.status === 'Active' ? 'active' : 'inactive'
     });
-  };
+    if (error) console.error("addStaff error:", error.message);
+  }, [supabase]);
 
-  // Keep hotel settings in sync
+  // Keep hotel settings in sync (debounced — only when values actually change)
+  const settingsTimerRef = useRef<NodeJS.Timeout | null>(null);
   useEffect(() => {
-    if (!isLoading) {
-      supabase.from('hotels').update({ name: hotelName, currency_primary: currency }).eq('id', HOTEL_ID).then();
-    }
-  }, [hotelName, currency, isLoading, supabase]);
+    if (isLoading) return;
+    
+    if (settingsTimerRef.current) clearTimeout(settingsTimerRef.current);
+    settingsTimerRef.current = setTimeout(async () => {
+      const { error } = await supabase
+        .from('hotels')
+        .update({ name: hotelName, currency_primary: currency })
+        .eq('id', HOTEL_ID);
+      if (error) console.error("Settings sync error:", error.message);
+    }, 1000);
+
+    return () => {
+      if (settingsTimerRef.current) clearTimeout(settingsTimerRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hotelName, currency, isLoading]);
 
   // Convert amount to USD equivalent
-  const toUSD = (amount: number, cur: "USD" | "SOS"): number => {
-    if (cur === "SOS") return amount / exchangeRate;
+  const toUSD = useCallback((amount: number, cur: "USD" | "SOS"): number => {
+    if (cur === "SOS" && exchangeRate > 0) return amount / exchangeRate;
     return amount;
-  };
+  }, [exchangeRate]);
 
-  const formatCurrency = (usdAmount: number) => {
+  const formatCurrency = useCallback((usdAmount: number) => {
     if (currency === "USD") {
-      return `$${usdAmount.toLocaleString()}`;
+      return `$${usdAmount.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
     }
-    return `${(usdAmount * exchangeRate).toLocaleString()} SOS`;
-  };
+    return `${(usdAmount * exchangeRate).toLocaleString(undefined, { maximumFractionDigits: 0 })} SOS`;
+  }, [currency, exchangeRate]);
 
   // Format any amount with its native currency
-  const formatAmount = (amount: number, cur: "USD" | "SOS"): string => {
+  const formatAmount = useCallback((amount: number, cur: "USD" | "SOS"): string => {
     if (cur === "USD") return `$${amount.toLocaleString()}`;
     return `${amount.toLocaleString()} SOS`;
-  };
+  }, []);
 
   return (
     <HotelContext.Provider value={{
       hotelName, setHotelName, currency, setCurrency, exchangeRate, setExchangeRate,
+      logoUrl, setLogoUrl,
+      currentUserRole, setCurrentUserRole,
       rooms, addRoom, updateRoomStatus,
       bookings, addBooking,
       expenses, addExpense,

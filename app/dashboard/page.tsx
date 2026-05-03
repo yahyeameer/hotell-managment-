@@ -11,16 +11,17 @@ import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, 
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { staggerChildren: 0.08 } }
-};
+} as const;
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } }
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" as const } }
 };
 
 export default function DashboardPage() {
   const { 
     hotelName, rooms, bookings, expenses, guests, 
-    formatCurrency, exchangeRate, setExchangeRate, toUSD
+    formatCurrency, exchangeRate, setExchangeRate, toUSD,
+    currentUserRole, setCurrentUserRole
   } = useHotel();
 
   const totalRevenue = bookings.reduce((sum, b) => sum + toUSD(b.amount, b.currency), 0);
@@ -89,9 +90,19 @@ export default function DashboardPage() {
             type="number"
             value={exchangeRate}
             onChange={e => setExchangeRate(Number(e.target.value) || 0)}
-            className="w-24 h-8 text-xs bg-muted/40 border-border text-foreground text-center"
+            className="w-20 sm:w-24 h-8 text-xs bg-muted/40 border-border text-foreground text-center"
           />
-          <span className="text-xs text-muted-foreground">SOS</span>
+          <span className="text-xs text-muted-foreground hidden sm:inline">SOS</span>
+          
+          <div className="w-px h-6 bg-border mx-1"></div>
+          
+          <Badge 
+            variant="outline" 
+            className={`cursor-pointer px-3 py-1.5 transition-colors ${currentUserRole === 'Admin' ? 'bg-primary/20 text-primary border-primary/50' : 'bg-muted text-muted-foreground'}`}
+            onClick={() => setCurrentUserRole(currentUserRole === 'Admin' ? 'Staff' : 'Admin')}
+          >
+            {currentUserRole} View
+          </Badge>
         </div>
       </motion.div>
 
@@ -101,8 +112,8 @@ export default function DashboardPage() {
           { title: "Revenue", icon: CreditCard, value: formatCurrency(totalRevenue), sub: `${(totalRevenue * exchangeRate).toLocaleString()} SOS`, color: "text-primary", bg: "bg-primary/10" },
           { title: "Guests", icon: Users, value: activeGuests.toString(), sub: "Total registered", color: "text-blue-500", bg: "bg-blue-500/10" },
           { title: "Occupancy", icon: BedDouble, value: `${occupancyRate}%`, sub: `${occupiedRooms}/${rooms.length} rooms`, color: "text-primary", bg: "bg-primary/10", progress: true },
-          { title: "Net Profit", icon: TrendingUp, value: formatCurrency(netProfit), sub: netProfit >= 0 ? "Profitable" : "Loss", color: netProfit >= 0 ? "text-primary" : "text-destructive", bg: netProfit >= 0 ? "bg-primary/10" : "bg-destructive/10" }
-        ].map((stat, i) => (
+          { title: "Net Profit", icon: TrendingUp, value: formatCurrency(netProfit), sub: netProfit >= 0 ? "Profitable" : "Loss", color: netProfit >= 0 ? "text-primary" : "text-destructive", bg: netProfit >= 0 ? "bg-primary/10" : "bg-destructive/10", adminOnly: true }
+        ].filter(stat => !(stat.adminOnly && currentUserRole === 'Staff')).map((stat, i) => (
           <motion.div 
             key={i} 
             variants={itemVariants}
@@ -138,96 +149,98 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      {/* Charts Row */}
-      <div className="grid gap-4 md:grid-cols-2">
-        {/* Payment Methods Breakdown */}
-        <motion.div variants={itemVariants}>
-          <Card className="glass border-border/50 bg-muted/20 shadow-lg">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-foreground text-sm sm:text-base flex items-center gap-2">
-                <span className="w-2 h-6 bg-primary rounded-full" />
-                Payment Methods
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {paymentBreakdown.length > 0 ? (
-                <div className="flex flex-col sm:flex-row items-center gap-4">
-                  <div className="w-36 h-36 sm:w-44 sm:h-44 shrink-0">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={paymentBreakdown}
-                          cx="50%"
-                          cy="50%"
-                          innerRadius="55%"
-                          outerRadius="85%"
-                          dataKey="value"
-                          strokeWidth={2}
-                          stroke="hsl(var(--background))"
-                        >
-                          {paymentBreakdown.map((entry, index) => (
-                            <Cell key={index} fill={entry.color} />
-                          ))}
-                        </Pie>
-                        <Tooltip 
-                          contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px', color: 'hsl(var(--foreground))' }}
-                          formatter={(value: number) => [`$${value}`, 'Revenue']}
-                        />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </div>
-                  <div className="flex-1 space-y-2 w-full">
-                    {paymentBreakdown.map((pm, i) => (
-                      <div key={i} className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: pm.color }} />
-                          <span className="text-xs text-foreground truncate">{pm.icon} {pm.name}</span>
+      {/* Charts Row - Hidden for Staff */}
+      {currentUserRole === 'Admin' && (
+        <div className="grid gap-4 md:grid-cols-2">
+          {/* Payment Methods Breakdown */}
+          <motion.div variants={itemVariants}>
+            <Card className="glass border-border/50 bg-muted/20 shadow-lg">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-foreground text-sm sm:text-base flex items-center gap-2">
+                  <span className="w-2 h-6 bg-primary rounded-full" />
+                  Payment Methods
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {paymentBreakdown.length > 0 ? (
+                  <div className="flex flex-col sm:flex-row items-center gap-4">
+                    <div className="w-36 h-36 sm:w-44 sm:h-44 shrink-0">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={paymentBreakdown}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius="55%"
+                            outerRadius="85%"
+                            dataKey="value"
+                            strokeWidth={2}
+                            stroke="hsl(var(--background))"
+                          >
+                            {paymentBreakdown.map((entry, index) => (
+                              <Cell key={index} fill={entry.color} />
+                            ))}
+                          </Pie>
+                          <Tooltip 
+                            contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px', color: 'hsl(var(--foreground))' }}
+                            formatter={(value) => [`$${value}`, 'Revenue']}
+                          />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+                    <div className="flex-1 space-y-2 w-full">
+                      {paymentBreakdown.map((pm, i) => (
+                        <div key={i} className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: pm.color }} />
+                            <span className="text-xs text-foreground truncate">{pm.icon} {pm.name}</span>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <span className="text-xs font-bold text-foreground">${pm.value}</span>
+                            <span className="text-[10px] text-muted-foreground ml-1">({pm.count})</span>
+                          </div>
                         </div>
-                        <div className="text-right shrink-0">
-                          <span className="text-xs font-bold text-foreground">${pm.value}</span>
-                          <span className="text-[10px] text-muted-foreground ml-1">({pm.count})</span>
-                        </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ) : (
-                <div className="h-44 flex items-center justify-center text-muted-foreground text-sm">
-                  No bookings yet. Create one to see analytics.
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </motion.div>
+                ) : (
+                  <div className="h-44 flex items-center justify-center text-muted-foreground text-sm">
+                    No bookings yet. Create one to see analytics.
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
 
-        {/* Weekly Revenue Bar Chart */}
-        <motion.div variants={itemVariants}>
-          <Card className="glass border-border/50 bg-muted/20 shadow-lg">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-foreground text-sm sm:text-base flex items-center gap-2">
-                <span className="w-2 h-6 bg-blue-500 rounded-full" />
-                Weekly Revenue
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="h-44 sm:h-52">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={revenueByDay} barCategoryGap="20%">
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
-                    <XAxis dataKey="day" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} axisLine={false} tickLine={false} width={35} />
-                    <Tooltip 
-                      contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px', color: 'hsl(var(--foreground))' }}
-                      formatter={(value: number) => [`$${value}`, 'Revenue']}
-                    />
-                    <Bar dataKey="amount" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-      </div>
+          {/* Weekly Revenue Bar Chart */}
+          <motion.div variants={itemVariants}>
+            <Card className="glass border-border/50 bg-muted/20 shadow-lg">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-foreground text-sm sm:text-base flex items-center gap-2">
+                  <span className="w-2 h-6 bg-blue-500 rounded-full" />
+                  Weekly Revenue
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="h-44 sm:h-52">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={revenueByDay} barCategoryGap="20%">
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+                      <XAxis dataKey="day" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} axisLine={false} tickLine={false} />
+                      <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} axisLine={false} tickLine={false} width={35} />
+                      <Tooltip 
+                        contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px', color: 'hsl(var(--foreground))' }}
+                        formatter={(value) => [`$${value}`, 'Revenue']}
+                      />
+                      <Bar dataKey="amount" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
+      )}
 
       {/* Bottom Row: Recent Bookings + Room Status */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">

@@ -42,7 +42,7 @@ export default function GuestsPage() {
           {filteredGuests.map((guest) => (
             <div key={guest.id} className="mobile-card">
               <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold shrink-0">
+                <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#CA8A04] to-[#FCD34D] shadow-[0_0_15px_rgba(202,138,4,0.3)] flex items-center justify-center text-yellow-950 font-black shrink-0 text-lg">
                   {guest.name.charAt(0)}
                 </div>
                 <div className="flex-1 min-w-0">

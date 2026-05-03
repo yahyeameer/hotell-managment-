@@ -222,15 +222,16 @@ export default function RoomsPage() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: i * 0.03 }}
           >
-            <Card className="glass border-border bg-muted/20 hover:bg-muted/40 hover:scale-[1.02] transition-all cursor-pointer group relative overflow-hidden">
+            <Card className="glass border-border bg-muted/20 hover:bg-muted/40 hover:scale-[1.05] transition-all duration-300 cursor-pointer group relative overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
               <div className={`absolute top-0 left-0 w-full h-1 ${
-                room.status === 'Available' ? 'bg-primary' : 
-                room.status === 'Occupied' ? 'bg-destructive' : 
-                'bg-secondary'
+                room.status === 'Available' ? 'bg-primary shadow-[0_0_15px_rgba(202,138,4,0.8)]' : 
+                room.status === 'Occupied' ? 'bg-destructive shadow-[0_0_15px_rgba(220,38,38,0.8)]' : 
+                'bg-secondary shadow-[0_0_15px_rgba(156,163,175,0.8)]'
               }`}></div>
-              <CardContent className="p-4 flex flex-col items-center justify-center min-h-[120px]">
-                <div className="text-2xl font-bold text-foreground mb-1">{room.id}</div>
-                <div className="text-xs text-muted-foreground">{room.type}</div>
+              <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <CardContent className="p-4 flex flex-col items-center justify-center min-h-[120px] relative z-10">
+                <div className="text-3xl font-black text-foreground mb-1 drop-shadow-md group-hover:text-primary transition-colors">{room.id}</div>
+                <div className="text-xs font-medium text-muted-foreground">{room.type}</div>
                 <Badge variant="outline" className={`mt-3 text-[10px] uppercase tracking-wider ${
                   room.status === 'Available' ? 'bg-primary/10 text-primary border-primary/20' : 
                   room.status === 'Occupied' ? 'bg-destructive/10 text-destructive border-destructive/20' : 

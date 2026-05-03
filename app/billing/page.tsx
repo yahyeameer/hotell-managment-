@@ -12,12 +12,13 @@ import { Plus, Search, Filter } from "lucide-react";
 import { useHotel, Booking, Guest, PAYMENT_METHODS, PaymentMethodId } from "@/app/context/HotelContext";
 
 export default function BillingPage() {
-  const { bookings, addBooking, rooms, formatCurrency, formatAmount, addGuest } = useHotel();
+  const { bookings, addBooking, rooms, formatCurrency, formatAmount, addGuest, toUSD } = useHotel();
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
 
   // Form State
   const [guestName, setGuestName] = useState("");
+  const [guestPhone, setGuestPhone] = useState("");
   const [roomId, setRoomId] = useState("");
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
@@ -52,7 +53,7 @@ export default function BillingPage() {
     const newGuest: Guest = {
       id: `GST-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`,
       name: guestName,
-      phone: "-",
+      phone: guestPhone || "-",
       email: "-",
       totalStays: 1,
       lifetimeValue: amount
@@ -61,6 +62,7 @@ export default function BillingPage() {
 
     setOpen(false);
     setGuestName("");
+    setGuestPhone("");
     setRoomId("");
     setCheckIn("");
     setCheckOut("");
@@ -96,6 +98,17 @@ export default function BillingPage() {
                   value={guestName} 
                   onChange={e => setGuestName(e.target.value)} 
                   required 
+                  className="bg-muted/40 border-border focus-visible:ring-primary/50"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="guestPhone">Guest Phone</Label>
+                <Input 
+                  id="guestPhone" 
+                  type="tel"
+                  value={guestPhone} 
+                  onChange={e => setGuestPhone(e.target.value)} 
+                  placeholder="e.g. +252 63 1234567"
                   className="bg-muted/40 border-border focus-visible:ring-primary/50"
                 />
               </div>
@@ -197,6 +210,24 @@ export default function BillingPage() {
         </Dialog>
       </div>
 
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3">
+        <div className="glass p-3 sm:p-4 rounded-xl border border-border bg-muted/20 relative overflow-hidden group hover:bg-muted/30 transition-colors">
+          <div className="absolute -right-4 -top-4 w-16 h-16 bg-primary/20 rounded-full blur-2xl group-hover:bg-primary/30 transition-all duration-500" />
+          <h3 className="text-xs text-muted-foreground mb-1 font-medium tracking-wide">Total Bookings</h3>
+          <p className="text-xl sm:text-3xl font-black text-foreground drop-shadow-sm">{bookings.length}</p>
+        </div>
+        <div className="glass p-3 sm:p-4 rounded-xl border border-border bg-muted/20 relative overflow-hidden group hover:bg-muted/30 transition-colors">
+          <div className="absolute -right-4 -top-4 w-16 h-16 bg-green-500/20 rounded-full blur-2xl group-hover:bg-green-500/30 transition-all duration-500" />
+          <h3 className="text-xs text-muted-foreground mb-1 font-medium tracking-wide">Total Revenue</h3>
+          <p className="text-xl sm:text-3xl font-black text-foreground drop-shadow-sm">{formatCurrency(bookings.reduce((sum, b) => sum + toUSD(b.amount, b.currency), 0))}</p>
+        </div>
+        <div className="glass p-3 sm:p-4 rounded-xl border border-border bg-muted/20 col-span-2 md:col-span-1 relative overflow-hidden group hover:bg-muted/30 transition-colors">
+          <div className="absolute -right-4 -top-4 w-16 h-16 bg-blue-500/20 rounded-full blur-2xl group-hover:bg-blue-500/30 transition-all duration-500" />
+          <h3 className="text-xs text-muted-foreground mb-1 font-medium tracking-wide">Pending</h3>
+          <p className="text-xl sm:text-3xl font-black text-foreground drop-shadow-sm">{bookings.filter(b => b.status === "Pending").length}</p>
+        </div>
+      </div>
+
       <div className="glass border border-border/50 bg-muted/20 rounded-xl p-3 sm:p-4">
         <div className="flex flex-col sm:flex-row gap-3 mb-4">
           <div className="relative flex-1">
@@ -218,7 +249,7 @@ export default function BillingPage() {
               <div key={booking.id} className="mobile-card space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold shrink-0">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#CA8A04] to-[#FCD34D] shadow-[0_0_10px_rgba(202,138,4,0.3)] flex items-center justify-center text-yellow-950 font-black shrink-0">
                       {booking.guest.charAt(0)}
                     </div>
                     <div>

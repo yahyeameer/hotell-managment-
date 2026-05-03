@@ -17,8 +17,8 @@ export function MobileNav() {
   const pathname = usePathname();
 
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-t border-border pb-safe">
-      <div className="flex items-center justify-around h-16 px-2">
+    <div className="md:hidden fixed bottom-5 left-4 right-4 z-50 bg-background/60 backdrop-blur-2xl border border-border/50 shadow-[0_8px_30px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.4)] rounded-2xl overflow-hidden pb-safe">
+      <div className="flex items-center justify-around h-16 px-1">
         {navItems.map((item) => {
           const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
           return (
@@ -30,17 +30,17 @@ export function MobileNav() {
               {isActive && (
                 <motion.div 
                   layoutId="mobile-nav-pill"
-                  className="absolute inset-0 bg-primary/10 rounded-xl m-1 border border-primary/20"
-                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  className="absolute inset-0 bg-primary/15 rounded-xl m-1 border border-primary/30 shadow-[inset_0_0_12px_rgba(202,138,4,0.1)]"
+                  transition={{ type: "spring", stiffness: 350, damping: 25 }}
                 />
               )}
               <item.icon className={cn(
-                "w-5 h-5 relative z-10 transition-colors duration-200", 
-                isActive ? "text-primary" : "text-muted-foreground"
+                "w-5 h-5 relative z-10 transition-colors duration-300", 
+                isActive ? "text-primary drop-shadow-[0_0_8px_rgba(202,138,4,0.5)]" : "text-muted-foreground hover:text-foreground"
               )} />
               <span className={cn(
-                "text-[10px] font-medium relative z-10 transition-colors duration-200",
-                isActive ? "text-primary" : "text-muted-foreground"
+                "text-[10px] font-medium relative z-10 transition-colors duration-300",
+                isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
               )}>
                 {item.label}
               </span>

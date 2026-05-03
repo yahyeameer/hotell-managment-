@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, DollarSign, Coins } from "lucide-react";
 import { useHotel, Expense, PAYMENT_METHODS, PaymentMethodId } from "@/app/context/HotelContext";
 
 export default function ExpensesPage() {
@@ -154,13 +154,14 @@ export default function ExpensesPage() {
                   <button
                     key={cur} type="button"
                     onClick={() => setExpenseCurrency(cur)}
-                    className={`py-2 rounded-xl border text-sm font-semibold transition-all ${
+                    className={`flex items-center justify-center gap-2 py-2 rounded-xl border text-sm font-semibold transition-all ${
                       expenseCurrency === cur
                         ? "border-primary bg-primary/10 text-primary"
                         : "border-border bg-muted/20 text-muted-foreground hover:bg-muted/40"
                     }`}
                   >
-                    {cur === "USD" ? "💵 USD" : "💰 SOS"}
+                    {cur === "USD" ? <DollarSign className="w-4 h-4" /> : <Coins className="w-4 h-4" />}
+                    {cur}
                   </button>
                 ))}
               </div>

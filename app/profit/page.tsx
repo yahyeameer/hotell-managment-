@@ -13,10 +13,10 @@ import {
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { staggerChildren: 0.08 } }
-};
+} as const;
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } }
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" as const } }
 };
 
 export default function ProfitPage() {
@@ -179,7 +179,7 @@ export default function ProfitPage() {
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
                     <XAxis dataKey="day" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} axisLine={false} tickLine={false} />
                     <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} axisLine={false} tickLine={false} width={35} />
-                    <Tooltip {...tooltipStyle} formatter={(value: number) => [`$${value}`, '']} />
+                    <Tooltip {...tooltipStyle} formatter={(value) => [`$${value}`, '']} />
                     <Area type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" fill="url(#revGrad)" strokeWidth={2} name="Revenue" />
                     <Area type="monotone" dataKey="expenses" stroke="#ef4444" fill="url(#expGrad)" strokeWidth={2} name="Expenses" />
                     <Legend iconType="circle" wrapperStyle={{ fontSize: '11px' }} />
@@ -208,7 +208,7 @@ export default function ProfitPage() {
                         <Pie data={revenueByMethod} cx="50%" cy="50%" innerRadius="55%" outerRadius="85%" dataKey="value" strokeWidth={2} stroke="hsl(var(--background))">
                           {revenueByMethod.map((entry, i) => <Cell key={i} fill={entry.color} />)}
                         </Pie>
-                        <Tooltip {...tooltipStyle} formatter={(value: number) => [`$${value}`, 'Revenue']} />
+                        <Tooltip {...tooltipStyle} formatter={(value) => [`$${value}`, 'Revenue']} />
                       </PieChart>
                     </ResponsiveContainer>
                   </div>
@@ -253,7 +253,7 @@ export default function ProfitPage() {
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} horizontal={false} />
                       <XAxis type="number" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} axisLine={false} tickLine={false} />
                       <YAxis dataKey="name" type="category" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} axisLine={false} tickLine={false} width={70} />
-                      <Tooltip {...tooltipStyle} formatter={(value: number) => [`$${value}`, 'Spent']} />
+                      <Tooltip {...tooltipStyle} formatter={(value) => [`$${value}`, 'Spent']} />
                       <Bar dataKey="value" radius={[0, 6, 6, 0]}>
                         {expensesByCategory.map((entry, i) => <Cell key={i} fill={entry.color} />)}
                       </Bar>

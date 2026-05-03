@@ -9,18 +9,20 @@ import { useHotel } from "@/app/context/HotelContext";
 import { useState } from "react";
 
 export default function SettingsPage() {
-  const { hotelName, setHotelName, currency, setCurrency, exchangeRate, setExchangeRate } = useHotel();
+  const { hotelName, setHotelName, currency, setCurrency, exchangeRate, setExchangeRate, logoUrl, setLogoUrl } = useHotel();
   
   // Local state for form inputs before saving
   const [localName, setLocalName] = useState(hotelName);
   const [localCurrency, setLocalCurrency] = useState(currency);
   const [localRate, setLocalRate] = useState(exchangeRate.toString());
+  const [localLogo, setLocalLogo] = useState(logoUrl);
   const [isSaved, setIsSaved] = useState(false);
 
   const handleSave = () => {
     setHotelName(localName);
     setCurrency(localCurrency);
     setExchangeRate(parseFloat(localRate));
+    setLogoUrl(localLogo);
     
     setIsSaved(true);
     setTimeout(() => setIsSaved(false), 3000);
@@ -53,12 +55,31 @@ export default function SettingsPage() {
             <div className="space-y-2">
               <Label className="text-foreground">Hotel Logo</Label>
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                <div className="w-16 h-16 rounded bg-primary flex items-center justify-center shrink-0">
-                  <span className="text-primary-foreground text-2xl font-black">{localName.charAt(0) || "H"}</span>
+                <div className="w-16 h-16 rounded-xl bg-primary/20 flex items-center justify-center shrink-0 border border-primary/50 overflow-hidden">
+                  {localLogo ? (
+                    <img src={localLogo} alt="Logo" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-primary-foreground text-2xl font-black">{localName.charAt(0) || "H"}</span>
+                  )}
                 </div>
-                <Button variant="outline" className="bg-transparent border-border text-foreground hover:bg-secondary w-full sm:w-auto">
+                <Label className="cursor-pointer inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-transparent hover:bg-secondary hover:text-secondary-foreground h-10 px-4 py-2 w-full sm:w-auto">
                   Upload New Logo
-                </Button>
+                  <input 
+                    type="file" 
+                    className="hidden" 
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          setLocalLogo(reader.result as string);
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }} 
+                  />
+                </Label>
               </div>
             </div>
           </CardContent>
@@ -184,6 +205,7 @@ export default function SettingsPage() {
             setLocalName(hotelName);
             setLocalCurrency(currency);
             setLocalRate(exchangeRate.toString());
+            setLocalLogo(logoUrl);
           }}>
             Cancel
           </Button>
