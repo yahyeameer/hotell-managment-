@@ -109,35 +109,34 @@
   background: hsl(var(--card) / 0.2);
   border: 1px solid hsl(var(--border) / 0.2);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 0 0 1px hsl(var(--primary) / 0.05);
+}
 
-  .glass {
-    @apply bg-white/5 backdrop-blur-2xl border border-white/10 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)];
-  }
+.glass-card {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, rgba(255,255,255,0.08), transparent);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 1.5rem;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+}
 
-  .glass-card {
-    @apply relative overflow-hidden bg-gradient-to-br from-white/[0.08] to-transparent backdrop-blur-2xl border border-white/[0.05] rounded-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.3)];
-  }
+.neon-glow-primary {
+  box-shadow: 0 0 20px rgba(202,138,4,0.3);
+}
 
-  .neon-glow-primary {
-    @apply shadow-[0_0_20px_rgba(202,138,4,0.3)];
-  }
+.neon-glow-blue {
+  box-shadow: 0 0 20px rgba(59,130,246,0.3);
+}
 
-  .neon-glow-blue {
-    @apply shadow-[0_0_20px_rgba(59,130,246,0.3)];
-  }
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
 
-  .animate-float {
-    animation: float 6s ease-in-out infinite;
-  }
-
-  @keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-10px); }
-  }
-
-  .mobile-card {
-    @apply glass p-4 rounded-2xl border border-white/10 active:scale-[0.98] transition-all;
-  }
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
 }
 
 @layer utilities {
