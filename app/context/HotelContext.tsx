@@ -3,14 +3,16 @@
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 
+import { Smartphone, CreditCard, Wallet, Banknote, Coins } from "lucide-react";
+
 // Payment methods used in Somalia
 export const PAYMENT_METHODS = [
-  { id: "zaad", label: "Zaad Pay", color: "#22c55e", icon: "📱" },
-  { id: "edahab", label: "eDahab Pay", color: "#3b82f6", icon: "💳" },
-  { id: "golis", label: "Golis Pay", color: "#f59e0b", icon: "📲" },
-  { id: "evc", label: "EVC Plus", color: "#ef4444", icon: "💸" },
-  { id: "cash_usd", label: "Cash (USD)", color: "#10b981", icon: "💵" },
-  { id: "cash_sos", label: "Cash (SOS)", color: "#8b5cf6", icon: "💰" },
+  { id: "zaad", label: "Zaad Pay", color: "#22c55e", icon: <Smartphone className="w-5 h-5 text-[#22c55e]" /> },
+  { id: "edahab", label: "eDahab Pay", color: "#3b82f6", icon: <CreditCard className="w-5 h-5 text-[#3b82f6]" /> },
+  { id: "golis", label: "Golis Pay", color: "#f59e0b", icon: <Smartphone className="w-5 h-5 text-[#f59e0b]" /> },
+  { id: "evc", label: "EVC Plus", color: "#ef4444", icon: <Wallet className="w-5 h-5 text-[#ef4444]" /> },
+  { id: "cash_usd", label: "Cash (USD)", color: "#10b981", icon: <Banknote className="w-5 h-5 text-[#10b981]" /> },
+  { id: "cash_sos", label: "Cash (SOS)", color: "#8b5cf6", icon: <Coins className="w-5 h-5 text-[#8b5cf6]" /> },
 ] as const;
 
 export type PaymentMethodId = typeof PAYMENT_METHODS[number]["id"];
@@ -48,6 +50,8 @@ interface HotelContextType {
 
   bookings: Booking[];
   addBooking: (booking: Booking) => void;
+  updateBookingPaymentStatus: (id: string, status: "Paid" | "Pending") => void;
+  endBooking: (id: string, room: string) => void;
 
   expenses: Expense[];
   addExpense: (expense: Expense) => void;
@@ -64,7 +68,7 @@ interface HotelContextType {
   isLoading: boolean;
 }
 
-const HotelContext = createContext<HotelContextType | undefined>(undefined);
+export const HotelContext = createContext<HotelContextType | undefined>(undefined);
 
 // Use a fixed hotel ID for MVP multi-tenancy
 const HOTEL_ID = "00000000-0000-0000-0000-000000000000";
@@ -74,9 +78,9 @@ export function HotelProvider({ children }: { children: React.ReactNode }) {
   const supabaseRef = useRef(createClient());
   const supabase = supabaseRef.current;
   
-  const [hotelName, setHotelName] = useState("Hargeisa Grand");
-  const [currency, setCurrency] = useState("USD");
-  const [exchangeRate, setExchangeRate] = useState(8500);
+  const [hotelName, setHotelNameState] = useState("Hargeisa Grand");
+  const [currency, setCurrencyState] = useState("USD");
+  const [exchangeRate, setExchangeRateState] = useState(8500);
   const [logoUrl, setLogoUrlState] = useState<string | null>(null);
   const [currentUserRole, setCurrentUserRole] = useState<"Admin" | "Staff">("Admin");
 
@@ -93,6 +97,24 @@ export function HotelProvider({ children }: { children: React.ReactNode }) {
     else localStorage.removeItem('hotel_logo');
   }, []);
 
+  const setExchangeRate = useCallback(async (rate: number) => {
+    setExchangeRateState(rate);
+    const { error } = await supabase.from('hotels').update({ exchange_rate: rate }).eq('id', HOTEL_ID);
+    if (error) console.error("updateExchangeRate error:", error.message);
+  }, [supabase]);
+
+  const setHotelName = useCallback(async (name: string) => {
+    setHotelNameState(name);
+    const { error } = await supabase.from('hotels').update({ name }).eq('id', HOTEL_ID);
+    if (error) console.error("updateHotelName error:", error.message);
+  }, [supabase]);
+
+  const setCurrency = useCallback(async (curr: string) => {
+    setCurrencyState(curr);
+    const { error } = await supabase.from('hotels').update({ currency_primary: curr }).eq('id', HOTEL_ID);
+    if (error) console.error("updateCurrency error:", error.message);
+  }, [supabase]);
+
   const [rooms, setRooms] = useState<Room[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -104,8 +126,24 @@ export function HotelProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let cancelled = false;
     
+    // Load from cache first
+    const cachedData = localStorage.getItem('hotelCache_' + HOTEL_ID);
+    if (cachedData) {
+      try {
+        const cache = JSON.parse(cachedData);
+        if (cache.rooms) setRooms(cache.rooms);
+        if (cache.bookings) setBookings(cache.bookings);
+        if (cache.expenses) setExpenses(cache.expenses);
+        if (cache.guests) setGuests(cache.guests);
+        if (cache.staff) setStaff(cache.staff);
+        setIsLoading(false);
+      } catch (e) {
+        console.error("Cache parsing error", e);
+      }
+    }
+    
     async function fetchData() {
-      setIsLoading(true);
+      if (!cachedData) setIsLoading(true);
       
       try {
         // Fetch Hotel Settings
@@ -113,8 +151,9 @@ export function HotelProvider({ children }: { children: React.ReactNode }) {
           .from('hotels').select('*').eq('id', HOTEL_ID).single();
         
         if (!cancelled && hotelData && !hotelError) {
-          setHotelName(hotelData.name);
-          if (hotelData.currency_primary) setCurrency(hotelData.currency_primary);
+          setHotelNameState(hotelData.name);
+          if (hotelData.currency_primary) setCurrencyState(hotelData.currency_primary);
+          if (hotelData.exchange_rate) setExchangeRateState(hotelData.exchange_rate);
         }
 
         // Fetch Rooms
@@ -192,13 +231,22 @@ export function HotelProvider({ children }: { children: React.ReactNode }) {
         console.error("Error fetching hotel data:", err);
       }
 
-      if (!cancelled) setIsLoading(false);
+      if (!cancelled) {
+        setIsLoading(false);
+      }
     }
     
     fetchData();
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Sync state to cache whenever it changes (optional but good for saving local updates quickly)
+  useEffect(() => {
+    if (isLoading) return;
+    const cache = { rooms, bookings, expenses, guests, staff };
+    localStorage.setItem('hotelCache_' + HOTEL_ID, JSON.stringify(cache));
+  }, [rooms, bookings, expenses, guests, staff, isLoading]);
 
   // Mutations
   const addRoom = useCallback(async (room: Room) => {
@@ -240,6 +288,28 @@ export function HotelProvider({ children }: { children: React.ReactNode }) {
     });
     if (error) console.error("addBooking error:", error.message);
   }, [supabase, updateRoomStatus]);
+
+  const updateBookingPaymentStatus = useCallback(async (id: string, status: "Paid" | "Pending") => {
+    setBookings(prev => prev.map(b => b.id === id ? { ...b, status } : b));
+    const { error } = await supabase.from('bookings')
+      .update({ paid: status === "Paid" })
+      .eq('id', id)
+      .eq('hotel_id', HOTEL_ID);
+    if (error) console.error("updateBookingPaymentStatus error:", error.message);
+  }, [supabase]);
+
+  const endBooking = useCallback(async (id: string, room: string) => {
+    // 1. Mark the room as available
+    updateRoomStatus(room, "Available");
+    
+    // 2. We can either remove the booking, or keep it in the list (if we want history). 
+    // Here we'll just keep it in the history, but maybe we can add a 'Completed' status. 
+    // Let's just keep the room available, but the booking remains in the DB.
+    // However, the dashboard logic depends on 'bookings' array. 
+    // Usually a booking shouldn't block the room forever.
+    // If the booking is ended, maybe we can update checkOut date or something.
+    // For now, we'll just free the room.
+  }, [updateRoomStatus]);
 
   const addExpense = useCallback(async (expense: Expense) => {
     setExpenses(prev => [expense, ...prev]);
@@ -324,7 +394,7 @@ export function HotelProvider({ children }: { children: React.ReactNode }) {
       logoUrl, setLogoUrl,
       currentUserRole, setCurrentUserRole,
       rooms, addRoom, updateRoomStatus,
-      bookings, addBooking,
+      bookings, addBooking, updateBookingPaymentStatus, endBooking,
       expenses, addExpense,
       guests, addGuest,
       staff, addStaff,

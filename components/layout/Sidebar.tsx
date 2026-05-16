@@ -39,11 +39,11 @@ export function SidebarContent() {
   });
 
   return (
-    <div className="flex flex-col h-full bg-background">
-      <div className="h-16 flex items-center px-6 border-b border-border/50 shrink-0">
+    <div className="flex flex-col h-full bg-background/80 backdrop-blur-xl">
+      <div className="h-[72px] flex items-center px-6 border-b border-border/40 shrink-0">
         <Logo hotelName={hotelName} iconSize="md" className="w-full truncate" />
       </div>
-      <div className="flex-1 py-6 flex flex-col gap-2 px-3 overflow-y-auto">
+      <div className="flex-1 py-5 flex flex-col gap-1 px-3 overflow-y-auto scrollbar-hide">
         {visibleRoutes.map((route) => {
           const isActive = pathname === route.href || pathname?.startsWith(`${route.href}/`);
           
@@ -52,17 +52,30 @@ export function SidebarContent() {
               key={route.href}
               href={route.href}
               className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-300",
+                "flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 group relative",
                 isActive 
-                  ? "bg-primary/10 text-primary border border-primary/20 shadow-[inset_0_0_12px_rgba(202,138,4,0.1)]" 
-                  : "text-muted-foreground border border-transparent hover:bg-muted/50 hover:text-foreground"
+                  ? "bg-primary/12 text-primary shadow-[0_2px_12px_rgba(202,138,4,0.1)]" 
+                  : "text-muted-foreground hover:bg-muted/60 hover:text-foreground active:scale-[0.97]"
               )}
             >
-              <route.icon className={cn("w-5 h-5 transition-colors", isActive ? "text-primary drop-shadow-[0_0_8px_rgba(202,138,4,0.5)]" : "text-muted-foreground")} />
-              {route.label}
+              {isActive && (
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-primary rounded-r-full shadow-[0_0_8px_rgba(202,138,4,0.4)]" />
+              )}
+              <route.icon className={cn(
+                "w-[18px] h-[18px] transition-all duration-300 shrink-0", 
+                isActive 
+                  ? "text-primary drop-shadow-[0_0_8px_rgba(202,138,4,0.5)]" 
+                  : "text-muted-foreground group-hover:text-foreground"
+              )} />
+              <span className="truncate">{route.label}</span>
             </Link>
           );
         })}
+      </div>
+      
+      {/* Bottom branding */}
+      <div className="px-5 py-4 border-t border-border/30">
+        <p className="text-[10px] text-muted-foreground/50 font-medium tracking-wider uppercase">Hotel Management v2.0</p>
       </div>
     </div>
   );
@@ -70,7 +83,7 @@ export function SidebarContent() {
 
 export function Sidebar() {
   return (
-    <aside className="w-64 h-screen bg-background/40 backdrop-blur-3xl border-r border-border/50 flex flex-col hidden md:flex transition-all duration-300 z-10 shrink-0 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
+    <aside className="w-[260px] h-screen bg-card/40 backdrop-blur-3xl border-r border-border/30 flex flex-col hidden md:flex transition-all duration-300 z-10 shrink-0 shadow-[4px_0_30px_rgba(0,0,0,0.03)]">
       <SidebarContent />
     </aside>
   );

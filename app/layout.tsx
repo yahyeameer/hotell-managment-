@@ -1,11 +1,11 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { ClientLayout } from "./ClientLayout";
 import { ThemeProvider } from "@/components/theme-provider";
 
-
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
+const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-heading" });
 
 export const metadata: Metadata = {
   title: "Hargeisa Grand Hotel | Management System",
@@ -32,7 +32,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.className} bg-background text-foreground min-h-screen min-h-dvh flex w-full overflow-x-hidden`}>
+      <body className={`${inter.variable} ${playfair.variable} font-sans bg-background text-foreground min-h-screen min-h-dvh flex w-full overflow-x-hidden`}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <ClientLayout>
             {children}

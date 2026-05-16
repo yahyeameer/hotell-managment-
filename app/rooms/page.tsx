@@ -72,7 +72,7 @@ export default function RoomsPage() {
         </div>
         
         <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger render={<Button className="bg-primary text-black hover:bg-primary/90 font-medium w-full md:w-auto" />}>
+          <DialogTrigger render={<Button className="font-medium w-full md:w-auto" />}>
               <Plus className="w-4 h-4 mr-2" /> Add Room
           </DialogTrigger>
           <DialogContent className="bg-background border-border text-foreground">
@@ -172,7 +172,7 @@ export default function RoomsPage() {
                   className="bg-muted/40 border-border focus-visible:ring-primary/50"
                 />
               </div>
-              <Button type="submit" className="w-full bg-primary text-black hover:bg-primary/90">
+              <Button type="submit" className="w-full">
                 {addMode === "single" ? "Save Room" : `Save ${bulkCount || 0} Rooms`}
               </Button>
             </form>
@@ -184,28 +184,28 @@ export default function RoomsPage() {
         <Badge 
           onClick={() => setFilter("All")}
           variant="outline" 
-          className={`px-4 py-1.5 cursor-pointer whitespace-nowrap transition-colors ${filter === "All" ? "bg-white/20 text-foreground border-white/30" : "bg-white/5 text-foreground border-border hover:bg-white/10"}`}
+          className={`px-4 py-1.5 cursor-pointer whitespace-nowrap transition-all duration-300 active:scale-95 rounded-xl ${filter === "All" ? "bg-foreground/10 text-foreground border-foreground/20 shadow-sm" : "bg-muted/30 text-muted-foreground border-border/50 hover:bg-muted/50"}`}
         >
           All Rooms ({rooms.length})
         </Badge>
         <Badge 
           onClick={() => setFilter("Available")}
           variant="outline" 
-          className={`px-4 py-1.5 cursor-pointer whitespace-nowrap transition-colors ${filter === "Available" ? "bg-primary/20 text-primary border-primary/30" : "bg-primary/5 text-primary border-primary/20 hover:bg-primary/10"}`}
+          className={`px-4 py-1.5 cursor-pointer whitespace-nowrap transition-all duration-300 active:scale-95 rounded-xl ${filter === "Available" ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/25 shadow-sm" : "bg-emerald-500/5 text-emerald-600/60 dark:text-emerald-400/60 border-emerald-500/15 hover:bg-emerald-500/10"}`}
         >
           Available ({availableCount})
         </Badge>
         <Badge 
           onClick={() => setFilter("Occupied")}
           variant="outline" 
-          className={`px-4 py-1.5 cursor-pointer whitespace-nowrap transition-colors ${filter === "Occupied" ? "bg-destructive/20 text-destructive border-destructive/30" : "bg-destructive/5 text-destructive border-destructive/20 hover:bg-destructive/10"}`}
+          className={`px-4 py-1.5 cursor-pointer whitespace-nowrap transition-all duration-300 active:scale-95 rounded-xl ${filter === "Occupied" ? "bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/25 shadow-sm" : "bg-rose-500/5 text-rose-600/60 dark:text-rose-400/60 border-rose-500/15 hover:bg-rose-500/10"}`}
         >
           Occupied ({occupiedCount})
         </Badge>
         <Badge 
           onClick={() => setFilter("Maintenance")}
           variant="outline" 
-          className={`px-4 py-1.5 cursor-pointer whitespace-nowrap transition-colors ${filter === "Maintenance" ? "bg-secondary/20 text-secondary border-secondary/30" : "bg-secondary/5 text-secondary border-secondary/20 hover:bg-secondary/10"}`}
+          className={`px-4 py-1.5 cursor-pointer whitespace-nowrap transition-all duration-300 active:scale-95 rounded-xl ${filter === "Maintenance" ? "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/25 shadow-sm" : "bg-amber-500/5 text-amber-600/60 dark:text-amber-400/60 border-amber-500/15 hover:bg-amber-500/10"}`}
         >
           Maintenance ({maintenanceCount})
         </Badge>
@@ -213,29 +213,29 @@ export default function RoomsPage() {
 
       <motion.div 
         layout
-        className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4"
+        className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4"
       >
         {filteredRooms.map((room, i) => (
           <motion.div
-            key={room.id}
+            key={`${room.id}-${i}`}
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: i * 0.03 }}
+            transition={{ delay: i * 0.025, duration: 0.3 }}
           >
-            <Card className="glass border-border bg-muted/20 hover:bg-muted/40 hover:scale-[1.05] transition-all duration-300 cursor-pointer group relative overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
-              <div className={`absolute top-0 left-0 w-full h-1 ${
-                room.status === 'Available' ? 'bg-primary shadow-[0_0_15px_rgba(202,138,4,0.8)]' : 
-                room.status === 'Occupied' ? 'bg-destructive shadow-[0_0_15px_rgba(220,38,38,0.8)]' : 
-                'bg-secondary shadow-[0_0_15px_rgba(156,163,175,0.8)]'
+            <Card className="glass border-border/30 bg-card/40 hover:bg-card/60 hover:shadow-[0_12px_40px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_12px_40px_rgba(0,0,0,0.3)] hover:scale-[1.04] transition-all duration-300 cursor-pointer group relative overflow-hidden">
+              <div className={`absolute top-0 left-0 w-full h-[3px] ${
+                room.status === 'Available' ? 'bg-gradient-to-r from-emerald-400 to-emerald-500' : 
+                room.status === 'Occupied' ? 'bg-gradient-to-r from-rose-400 to-rose-500' : 
+                'bg-gradient-to-r from-amber-400 to-amber-500'
               }`}></div>
-              <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <CardContent className="p-4 flex flex-col items-center justify-center min-h-[120px] relative z-10">
-                <div className="text-3xl font-black text-foreground mb-1 drop-shadow-md group-hover:text-primary transition-colors">{room.id}</div>
-                <div className="text-xs font-medium text-muted-foreground">{room.type}</div>
-                <Badge variant="outline" className={`mt-3 text-[10px] uppercase tracking-wider ${
-                  room.status === 'Available' ? 'bg-primary/10 text-primary border-primary/20' : 
-                  room.status === 'Occupied' ? 'bg-destructive/10 text-destructive border-destructive/20' : 
-                  'bg-secondary/10 text-secondary border-secondary/20'
+              <div className="absolute inset-0 bg-gradient-to-b from-white/[0.06] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <CardContent className="p-4 flex flex-col items-center justify-center min-h-[130px] relative z-10">
+                <div className="text-3xl sm:text-4xl font-black text-foreground mb-1.5 group-hover:text-primary transition-colors duration-300 tabular-nums">{room.id}</div>
+                <div className="text-[11px] font-medium text-muted-foreground tracking-wide">{room.type}</div>
+                <Badge variant="outline" className={`mt-3 text-[10px] uppercase tracking-widest font-bold ${
+                  room.status === 'Available' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20' : 
+                  room.status === 'Occupied' ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20' : 
+                  'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
                 }`}>
                   {room.status}
                 </Badge>

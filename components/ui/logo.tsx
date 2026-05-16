@@ -2,7 +2,8 @@
 
 import { Crown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHotel } from "@/app/context/HotelContext";
+import { HotelContext } from "@/app/context/HotelContext";
+import { useContext } from "react";
 
 interface LogoProps {
   hotelName: string;
@@ -12,14 +13,9 @@ interface LogoProps {
 }
 
 export function Logo({ hotelName, className, iconSize = "md", showText = true }: LogoProps) {
-  // Use a try-catch or safe access since Logo might be used in places where Context is missing in some edge cases
-  let contextLogoUrl = null;
-  try {
-    const context = useHotel();
-    contextLogoUrl = context.logoUrl;
-  } catch (e) {
-    // Ignore if not wrapped
-  }
+  // Use useContext directly to avoid throwing an error if used outside of HotelProvider
+  const context = useContext(HotelContext);
+  const contextLogoUrl = context?.logoUrl || null;
 
   const sizeClasses = {
     sm: "w-7 h-7 rounded-lg",

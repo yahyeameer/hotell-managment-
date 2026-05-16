@@ -19,12 +19,12 @@ export default function GuestsPage() {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight text-foreground">Guests Directory</h2>
-          <p className="text-muted-foreground text-sm">View guest history, contact info, and lifetime value.</p>
+          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">Guests Directory</h2>
+          <p className="text-muted-foreground text-xs sm:text-sm mt-0.5">View guest history, contact info, and lifetime value.</p>
         </div>
       </div>
 
-      <div className="glass border border-border/50 bg-muted/20 rounded-xl p-3 sm:p-4">
+      <div className="glass border border-border/30 bg-card/30 rounded-2xl p-3 sm:p-5">
         <div className="flex flex-col sm:flex-row gap-3 mb-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -32,7 +32,7 @@ export default function GuestsPage() {
               placeholder="Search guests..." 
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="pl-9 bg-muted/40 border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-primary/50" 
+              className="pl-9 bg-muted/30 border-border/40 text-foreground placeholder:text-muted-foreground/60 focus-visible:ring-primary/30" 
             />
           </div>
         </div>
@@ -42,7 +42,7 @@ export default function GuestsPage() {
           {filteredGuests.map((guest) => (
             <div key={guest.id} className="mobile-card">
               <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#CA8A04] to-[#FCD34D] shadow-[0_0_15px_rgba(202,138,4,0.3)] flex items-center justify-center text-yellow-950 font-black shrink-0 text-lg">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary/40 to-primary/15 shadow-[0_0_12px_rgba(202,138,4,0.2)] flex items-center justify-center text-primary font-black shrink-0 text-lg border border-primary/15">
                   {guest.name.charAt(0)}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -50,7 +50,7 @@ export default function GuestsPage() {
                   <p className="text-xs text-muted-foreground mt-0.5">{guest.phone} · {guest.email}</p>
                 </div>
               </div>
-              <div className="flex items-center justify-between mt-3 pt-2 border-t border-border/30">
+              <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-border/20">
                 <span className="text-xs text-muted-foreground">{guest.totalStays} stays</span>
                 <span className="text-sm font-bold text-primary">{formatCurrency(guest.lifetimeValue)}</span>
               </div>
@@ -62,9 +62,9 @@ export default function GuestsPage() {
         </div>
 
         {/* Desktop Table View */}
-        <div className="hidden md:block rounded-md border border-border overflow-x-auto">
+        <div className="hidden md:block rounded-xl border border-border/30 overflow-x-auto">
           <Table>
-            <TableHeader className="bg-muted/40 whitespace-nowrap">
+            <TableHeader className="bg-muted/30 whitespace-nowrap">
               <TableRow className="border-border hover:bg-transparent">
                 <TableHead className="text-muted-foreground">Guest ID</TableHead>
                 <TableHead className="text-muted-foreground">Name</TableHead>

@@ -8,11 +8,11 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search, Filter } from "lucide-react";
+import { Plus, Search, Filter, CheckCircle2, XCircle, LogOut } from "lucide-react";
 import { useHotel, Booking, Guest, PAYMENT_METHODS, PaymentMethodId } from "@/app/context/HotelContext";
 
 export default function BillingPage() {
-  const { bookings, addBooking, rooms, formatCurrency, formatAmount, addGuest, toUSD } = useHotel();
+  const { bookings, addBooking, rooms, formatCurrency, formatAmount, addGuest, toUSD, guests, exchangeRate, updateBookingPaymentStatus, endBooking } = useHotel();
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
 
@@ -34,7 +34,10 @@ export default function BillingPage() {
     e.preventDefault();
     
     const room = rooms.find(r => r.id === roomId);
-    const amount = room ? room.price * 2 : 100;
+    let amount = room ? room.price * 2 : 100;
+    if (bookingCurrency === "SOS") {
+      amount = amount * exchangeRate;
+    }
 
     const newBooking: Booking = {
       id: `BKG-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`,
@@ -50,15 +53,18 @@ export default function BillingPage() {
 
     addBooking(newBooking);
     
-    const newGuest: Guest = {
-      id: `GST-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`,
-      name: guestName,
-      phone: guestPhone || "-",
-      email: "-",
-      totalStays: 1,
-      lifetimeValue: amount
-    };
-    addGuest(newGuest);
+    const existingGuest = guests.find(g => g.name.toLowerCase() === guestName.toLowerCase());
+    if (!existingGuest) {
+      const newGuest: Guest = {
+        id: `GST-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`,
+        name: guestName,
+        phone: guestPhone || "-",
+        email: "-",
+        totalStays: 1,
+        lifetimeValue: amount
+      };
+      addGuest(newGuest);
+    }
 
     setOpen(false);
     setGuestName("");
@@ -83,7 +89,7 @@ export default function BillingPage() {
         </div>
         
         <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger render={<Button className="bg-primary text-black hover:bg-primary/90 font-medium w-full md:w-auto" />}>
+          <DialogTrigger render={<Button className="font-medium w-full md:w-auto" />}>
               <Plus className="w-4 h-4 mr-2" /> New Booking
           </DialogTrigger>
           <DialogContent className="bg-background border-border text-foreground max-h-[90vh] overflow-y-auto">
@@ -168,13 +174,13 @@ export default function BillingPage() {
                         if (pm.id === "cash_sos") setBookingCurrency("SOS");
                         else if (pm.id === "cash_usd") setBookingCurrency("USD");
                       }}
-                      className={`flex flex-col items-center gap-1 p-3 rounded-xl border text-xs font-medium transition-all ${
+                      className={`flex flex-col items-center gap-1.5 p-3 rounded-2xl border text-xs font-medium transition-all duration-300 active:scale-95 ${
                         paymentMethod === pm.id 
-                          ? "border-primary bg-primary/10 text-primary shadow-[0_0_10px_rgba(var(--primary),0.15)]" 
-                          : "border-border bg-muted/20 text-muted-foreground hover:bg-muted/40"
+                          ? "border-primary bg-primary/10 text-primary shadow-[inset_0_0_12px_rgba(202,138,4,0.1)] drop-shadow-sm" 
+                          : "border-border/50 bg-muted/30 text-muted-foreground hover:bg-muted/50 hover:border-border"
                       }`}
                     >
-                      <span className="text-lg">{pm.icon}</span>
+                      <span className={paymentMethod === pm.id ? "drop-shadow-[0_0_8px_rgba(202,138,4,0.5)] transition-all" : ""}>{pm.icon}</span>
                       <span className="truncate w-full text-center">{pm.label}</span>
                     </button>
                   ))}
@@ -202,7 +208,7 @@ export default function BillingPage() {
                 </div>
               </div>
 
-              <Button type="submit" className="w-full bg-primary text-black hover:bg-primary/90" disabled={!roomId}>
+              <Button type="submit" className="w-full" disabled={!roomId}>
                 Confirm Booking
               </Button>
             </form>
@@ -271,6 +277,38 @@ export default function BillingPage() {
                   </div>
                   <p className="text-sm font-bold text-foreground">{formatAmount(booking.amount, booking.currency)}</p>
                 </div>
+                <div className="flex gap-3 pt-3 border-t border-border/30">
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className={`flex-1 text-xs h-10 sm:h-9 rounded-xl transition-all duration-300 border-none ${
+                      booking.status === "Paid" 
+                        ? "bg-rose-500/10 text-rose-600 hover:bg-rose-500/20 hover:text-rose-700" 
+                        : "bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 hover:text-emerald-700"
+                    }`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      updateBookingPaymentStatus(booking.id, booking.status === "Paid" ? "Pending" : "Paid");
+                    }}
+                  >
+                    {booking.status === "Paid" ? (
+                      <><XCircle className="w-4 h-4 mr-1.5" /> Muu bixin</>
+                    ) : (
+                      <><CheckCircle2 className="w-4 h-4 mr-1.5" /> Bixiyey</>
+                    )}
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="default" 
+                    className="flex-1 text-xs h-10 sm:h-9 rounded-xl bg-blue-500/10 text-blue-600 hover:bg-blue-500/20 hover:text-blue-700 border-none transition-all duration-300"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      endBooking(booking.id, booking.room);
+                    }}
+                  >
+                    <LogOut className="w-4 h-4 mr-1.5" /> Baxay
+                  </Button>
+                </div>
               </div>
             );
           })}
@@ -291,6 +329,7 @@ export default function BillingPage() {
                 <TableHead className="text-muted-foreground">Payment</TableHead>
                 <TableHead className="text-muted-foreground text-right">Amount</TableHead>
                 <TableHead className="text-muted-foreground text-center">Status</TableHead>
+                <TableHead className="text-muted-foreground text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -317,12 +356,46 @@ export default function BillingPage() {
                         {booking.status}
                       </Badge>
                     </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className={`h-8 text-xs px-3 transition-all duration-300 border-none ${
+                            booking.status === "Paid" 
+                              ? "bg-rose-500/10 text-rose-600 hover:bg-rose-500/20 hover:text-rose-700" 
+                              : "bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 hover:text-emerald-700"
+                          }`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            updateBookingPaymentStatus(booking.id, booking.status === "Paid" ? "Pending" : "Paid");
+                          }}
+                        >
+                          {booking.status === "Paid" ? (
+                            <><XCircle className="w-3.5 h-3.5 mr-1.5" /> Muu bixin</>
+                          ) : (
+                            <><CheckCircle2 className="w-3.5 h-3.5 mr-1.5" /> Bixiyey</>
+                          )}
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="default" 
+                          className="h-8 text-xs px-3 bg-blue-500/10 text-blue-600 hover:bg-blue-500/20 hover:text-blue-700 border-none transition-all duration-300"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            endBooking(booking.id, booking.room);
+                          }}
+                        >
+                          <LogOut className="w-3.5 h-3.5 mr-1.5" /> Baxay
+                        </Button>
+                      </div>
+                    </TableCell>
                   </TableRow>
                 );
               })}
               {filteredBookings.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                     No bookings found.
                   </TableCell>
                 </TableRow>

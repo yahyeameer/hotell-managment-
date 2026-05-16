@@ -165,7 +165,7 @@ export default function DashboardPage() {
                 {paymentBreakdown.length > 0 ? (
                   <div className="flex flex-col sm:flex-row items-center gap-4">
                     <div className="w-36 h-36 sm:w-44 sm:h-44 shrink-0">
-                      <ResponsiveContainer width="100%" height="100%">
+                      <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                         <PieChart>
                           <Pie
                             data={paymentBreakdown}
@@ -223,7 +223,7 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="h-44 sm:h-52">
-                  <ResponsiveContainer width="100%" height="100%">
+                  <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                     <BarChart data={revenueByDay} barCategoryGap="20%">
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
                       <XAxis dataKey="day" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} axisLine={false} tickLine={false} />
@@ -302,7 +302,7 @@ export default function DashboardPage() {
               {roomStatusData.length > 0 ? (
                 <div className="flex flex-col items-center gap-4">
                   <div className="w-36 h-36">
-                    <ResponsiveContainer width="100%" height="100%">
+                    <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                       <PieChart>
                         <Pie
                           data={roomStatusData}

@@ -75,7 +75,7 @@ export function Header() {
   };
 
   return (
-    <header className="h-14 md:h-16 flex items-center justify-between px-3 md:px-6 bg-background/40 backdrop-blur-3xl border-b border-border/50 z-10 sticky top-0 w-full shadow-[0_4px_30px_rgba(0,0,0,0.02)]">
+    <header className="h-14 md:h-[72px] flex items-center justify-between px-3 md:px-8 bg-background/60 backdrop-blur-3xl border-b border-border/30 z-10 sticky top-0 w-full shadow-[0_4px_30px_rgba(0,0,0,0.03)]">
       <div className="flex items-center gap-3 w-full">
         {/* Mobile hamburger */}
         <Sheet>
@@ -99,7 +99,7 @@ export function Header() {
           <input 
             type="text" 
             placeholder="Search bookings, guests..." 
-            className="w-full h-9 bg-muted/30 backdrop-blur-md border border-border/50 rounded-full pl-9 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all shadow-inner"
+            className="w-full h-10 bg-muted/30 border border-border/40 rounded-xl pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:bg-background/80 transition-all duration-300 shadow-sm"
           />
         </div>
       </div>
@@ -247,27 +247,30 @@ export function Header() {
         </div>
 
         {/* Desktop user info */}
-        <div className="hidden md:flex items-center gap-3 border-l border-border pl-4 ml-2">
+        <div className="hidden md:flex items-center gap-3 border-l border-border/30 pl-5 ml-2">
           <div className="flex flex-col items-end">
-            <span className="text-sm font-medium text-foreground">{userEmail ? userEmail.split('@')[0] : (currentUserRole === 'Admin' ? "Admin User" : "Staff Member")}</span>
-            <span className="text-xs text-muted-foreground">{currentUserRole === 'Admin' ? "Manager" : "Staff"}</span>
+            <span className="text-sm font-semibold text-foreground">{userEmail ? userEmail.split('@')[0] : (currentUserRole === 'Admin' ? "Admin User" : "Staff Member")}</span>
+            <span className="text-[11px] text-muted-foreground">{currentUserRole === 'Admin' ? "Manager" : "Staff"}</span>
           </div>
-          <Avatar className="w-8 h-8 border border-primary/20">
-            <AvatarFallback className="bg-primary/20 text-primary font-medium text-xs">
+          <Avatar className="w-9 h-9 border-2 border-primary/25 shadow-sm">
+            <AvatarFallback className="bg-gradient-to-br from-primary/30 to-primary/10 text-primary font-bold text-xs">
               {userEmail ? userEmail.charAt(0).toUpperCase() : "AD"}
             </AvatarFallback>
           </Avatar>
-          <Button variant="ghost" size="icon" onClick={handleSignOut} className="text-muted-foreground hover:text-destructive transition-colors ml-1" title="Sign out">
+          <Button variant="ghost" size="icon" onClick={handleSignOut} className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all duration-300 ml-1 !min-w-9 !min-h-9" title="Sign out">
             <LogOut className="w-4 h-4" />
           </Button>
         </div>
         {/* Mobile avatar */}
         <div className="md:hidden flex items-center gap-1">
-          <Avatar className="w-7 h-7 border border-primary/20">
-            <AvatarFallback className="bg-primary/20 text-primary font-medium text-[10px]">
+          <Avatar className="w-8 h-8 border-2 border-primary/25 shadow-sm">
+            <AvatarFallback className="bg-gradient-to-br from-primary/30 to-primary/10 text-primary font-bold text-[11px]">
               {userEmail ? userEmail.charAt(0).toUpperCase() : "AD"}
             </AvatarFallback>
           </Avatar>
+          <Button variant="ghost" size="icon" onClick={handleSignOut} className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all duration-300 !min-w-9 !min-h-9" title="Sign out">
+            <LogOut className="w-4 h-4" />
+          </Button>
         </div>
       </div>
     </header>

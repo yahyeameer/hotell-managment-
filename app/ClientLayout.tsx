@@ -14,31 +14,25 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
   if (isLoginPage) {
     return (
       <HotelProvider>
-        <div className="flex-1 flex flex-col min-h-screen min-h-dvh overflow-hidden w-full bg-background relative">
-          <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary/20 blur-[120px] pointer-events-none" />
-          <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-blue-500/20 blur-[120px] pointer-events-none" />
-          <div className="relative z-10 w-full flex-1 flex flex-col">
-            {children}
-          </div>
-        </div>
+        {children}
       </HotelProvider>
     );
   }
 
   return (
     <HotelProvider>
-      {/* Ambient Premium Background */}
+      {/* Ambient Premium Background — subtle, performant */}
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-[-10%] left-[-10%] w-[40vw] h-[40vw] rounded-full bg-primary/10 blur-[100px] md:blur-[140px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40vw] h-[40vw] rounded-full bg-blue-500/10 blur-[100px] md:blur-[140px]" />
+        <div className="absolute top-[-15%] left-[-10%] w-[45vw] h-[45vw] rounded-full bg-primary/8 blur-[120px] md:blur-[160px]" />
+        <div className="absolute bottom-[-15%] right-[-10%] w-[40vw] h-[40vw] rounded-full bg-blue-500/6 blur-[120px] md:blur-[160px]" />
       </div>
 
       <div className="relative z-10 flex w-full min-h-screen min-h-dvh">
         <Sidebar />
         <div className="flex-1 flex flex-col min-h-screen min-h-dvh overflow-hidden w-full">
           <Header />
-          <main className="flex-1 overflow-y-auto bg-background/40 backdrop-blur-3xl p-3 sm:p-4 md:p-8 lg:p-10 w-full pb-28 md:pb-8">
-            <div className="max-w-7xl mx-auto">
+          <main className="flex-1 overflow-y-auto bg-background/50 backdrop-blur-xl p-3 sm:p-4 md:p-8 lg:p-10 w-full pb-28 md:pb-8">
+            <div className="max-w-7xl mx-auto animate-slide-up">
               {children}
             </div>
           </main>

@@ -99,10 +99,12 @@ export default function ProfitPage() {
       {/* Top Stat Cards */}
       <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3">
         <motion.div variants={itemVariants}>
-          <Card className="glass border-primary/20 bg-primary/5 overflow-hidden">
+          <Card className="glass border-emerald-500/20 bg-emerald-500/5 overflow-hidden relative">
             <CardHeader className="flex flex-row items-center justify-between pb-1">
-              <CardTitle className="text-xs sm:text-sm font-medium text-primary">Revenue</CardTitle>
-              <ArrowUpRight className="w-4 h-4 text-primary" />
+              <CardTitle className="text-xs sm:text-sm font-medium text-emerald-600 dark:text-emerald-400">Revenue</CardTitle>
+              <div className="w-8 h-8 rounded-xl bg-emerald-500/10 flex items-center justify-center">
+                <ArrowUpRight className="w-4 h-4 text-emerald-500" />
+              </div>
             </CardHeader>
             <CardContent>
               <div className="text-lg sm:text-xl md:text-2xl font-bold text-foreground">{formatCurrency(totalRevenue)}</div>
@@ -114,10 +116,12 @@ export default function ProfitPage() {
         </motion.div>
 
         <motion.div variants={itemVariants}>
-          <Card className="glass border-destructive/20 bg-destructive/5 overflow-hidden">
+          <Card className="glass border-rose-500/20 bg-rose-500/5 overflow-hidden relative">
             <CardHeader className="flex flex-row items-center justify-between pb-1">
-              <CardTitle className="text-xs sm:text-sm font-medium text-destructive">Expenses</CardTitle>
-              <ArrowDownRight className="w-4 h-4 text-destructive" />
+              <CardTitle className="text-xs sm:text-sm font-medium text-rose-600 dark:text-rose-400">Expenses</CardTitle>
+              <div className="w-8 h-8 rounded-xl bg-rose-500/10 flex items-center justify-center">
+                <ArrowDownRight className="w-4 h-4 text-rose-500" />
+              </div>
             </CardHeader>
             <CardContent>
               <div className="text-lg sm:text-xl md:text-2xl font-bold text-foreground">{formatCurrency(totalExpenses)}</div>
@@ -129,16 +133,18 @@ export default function ProfitPage() {
         </motion.div>
 
         <motion.div variants={itemVariants} className="col-span-2 md:col-span-1">
-          <Card className="glass border-border bg-muted/40 overflow-hidden">
+          <Card className="glass border-border/30 bg-card/40 overflow-hidden relative">
             <CardHeader className="flex flex-row items-center justify-between pb-1">
               <CardTitle className="text-xs sm:text-sm font-medium text-foreground">Net Profit</CardTitle>
-              <DollarSign className="w-4 h-4 text-foreground" />
+              <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
+                <DollarSign className="w-4 h-4 text-primary" />
+              </div>
             </CardHeader>
             <CardContent>
               <div className={`text-lg sm:text-xl md:text-2xl font-bold ${netProfit >= 0 ? 'text-primary' : 'text-destructive'}`}>
                 {formatCurrency(netProfit)}
               </div>
-              <div className="mt-2 w-full h-2 bg-white/10 rounded-full overflow-hidden flex">
+              <div className="mt-2 w-full h-2 bg-muted/40 rounded-full overflow-hidden flex">
                 <div className="h-full bg-primary transition-all duration-700" style={{ width: `${Math.max(margin, 0)}%` }} />
                 <div className="h-full bg-destructive transition-all duration-700" style={{ width: `${100 - Math.max(margin, 0)}%` }} />
               </div>
@@ -164,7 +170,7 @@ export default function ProfitPage() {
             </CardHeader>
             <CardContent>
               <div className="h-48 sm:h-56">
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                   <AreaChart data={comparisonData}>
                     <defs>
                       <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
@@ -203,7 +209,7 @@ export default function ProfitPage() {
               {revenueByMethod.length > 0 ? (
                 <div className="flex flex-col sm:flex-row items-center gap-4">
                   <div className="w-36 h-36 sm:w-44 sm:h-44 shrink-0">
-                    <ResponsiveContainer width="100%" height="100%">
+                    <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                       <PieChart>
                         <Pie data={revenueByMethod} cx="50%" cy="50%" innerRadius="55%" outerRadius="85%" dataKey="value" strokeWidth={2} stroke="hsl(var(--background))">
                           {revenueByMethod.map((entry, i) => <Cell key={i} fill={entry.color} />)}
@@ -248,7 +254,7 @@ export default function ProfitPage() {
             <CardContent>
               {expensesByCategory.length > 0 ? (
                 <div className="h-48 sm:h-56">
-                  <ResponsiveContainer width="100%" height="100%">
+                  <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                     <BarChart data={expensesByCategory} layout="vertical" barCategoryGap="15%">
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} horizontal={false} />
                       <XAxis type="number" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} axisLine={false} tickLine={false} />
@@ -282,7 +288,7 @@ export default function ProfitPage() {
               {currencySplit.length > 0 && (
                 <div className="flex items-center gap-4">
                   <div className="w-24 h-24 shrink-0">
-                    <ResponsiveContainer width="100%" height="100%">
+                    <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                       <PieChart>
                         <Pie data={currencySplit} cx="50%" cy="50%" innerRadius="50%" outerRadius="80%" dataKey="value" strokeWidth={2} stroke="hsl(var(--background))">
                           {currencySplit.map((entry, i) => <Cell key={i} fill={entry.color} />)}

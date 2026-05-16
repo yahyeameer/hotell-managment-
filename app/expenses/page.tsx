@@ -71,7 +71,7 @@ export default function ExpensesPage() {
           <p className="text-muted-foreground text-xs sm:text-sm">Monitor daily hotel operations costs.</p>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger render={<Button className="bg-primary text-black hover:bg-primary/90 font-medium w-full md:w-auto" />}>
+          <DialogTrigger render={<Button className="font-medium w-full md:w-auto" />}>
               <Plus className="w-4 h-4 mr-2" /> Record Expense
           </DialogTrigger>
           <DialogContent className="bg-background border-border text-foreground max-h-[90vh] overflow-y-auto">
@@ -135,13 +135,13 @@ export default function ExpensesPage() {
                         if (pm.id === "cash_sos") setExpenseCurrency("SOS");
                         else if (pm.id === "cash_usd") setExpenseCurrency("USD");
                       }}
-                      className={`flex flex-col items-center gap-1 p-2.5 rounded-xl border text-xs font-medium transition-all ${
+                      className={`flex flex-col items-center gap-1.5 p-3 rounded-2xl border text-xs font-medium transition-all duration-300 active:scale-95 ${
                         paymentMethod === pm.id 
-                          ? "border-primary bg-primary/10 text-primary" 
-                          : "border-border bg-muted/20 text-muted-foreground hover:bg-muted/40"
+                          ? "border-primary bg-primary/10 text-primary shadow-[inset_0_0_12px_rgba(202,138,4,0.1)] drop-shadow-sm" 
+                          : "border-border/50 bg-muted/30 text-muted-foreground hover:bg-muted/50 hover:border-border"
                       }`}
                     >
-                      <span className="text-base">{pm.icon}</span>
+                      <span className={paymentMethod === pm.id ? "drop-shadow-[0_0_8px_rgba(202,138,4,0.5)] transition-all" : ""}>{pm.icon}</span>
                       <span className="truncate w-full text-center text-[10px]">{pm.label}</span>
                     </button>
                   ))}
@@ -154,10 +154,10 @@ export default function ExpensesPage() {
                   <button
                     key={cur} type="button"
                     onClick={() => setExpenseCurrency(cur)}
-                    className={`flex items-center justify-center gap-2 py-2 rounded-xl border text-sm font-semibold transition-all ${
+                    className={`flex items-center justify-center gap-2 py-2.5 rounded-2xl border text-sm font-semibold transition-all duration-300 active:scale-95 ${
                       expenseCurrency === cur
-                        ? "border-primary bg-primary/10 text-primary"
-                        : "border-border bg-muted/20 text-muted-foreground hover:bg-muted/40"
+                        ? "border-primary bg-primary/10 text-primary shadow-[inset_0_0_12px_rgba(202,138,4,0.1)]"
+                        : "border-border/50 bg-muted/30 text-muted-foreground hover:bg-muted/50"
                     }`}
                   >
                     {cur === "USD" ? <DollarSign className="w-4 h-4" /> : <Coins className="w-4 h-4" />}
@@ -166,7 +166,7 @@ export default function ExpensesPage() {
                 ))}
               </div>
 
-              <Button type="submit" className="w-full bg-primary text-black hover:bg-primary/90">
+              <Button type="submit" className="w-full">
                 Save Expense
               </Button>
             </form>

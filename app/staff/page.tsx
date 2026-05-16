@@ -68,16 +68,16 @@ export default function StaffPage() {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight text-foreground">Staff Management</h2>
-          <p className="text-muted-foreground text-sm">Manage employee details, roles, and attendance.</p>
+          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">Staff Management</h2>
+          <p className="text-muted-foreground text-xs sm:text-sm mt-0.5">Manage employee details, roles, and attendance.</p>
         </div>
         <div className="flex gap-2 w-full md:w-auto">
-          <Button variant="outline" className="bg-transparent border-border text-foreground hover:bg-white/5 flex-1 md:flex-none">
+          <Button variant="outline" className="bg-transparent border-border/40 text-foreground hover:bg-muted/40 flex-1 md:flex-none">
             <UserCheck className="w-4 h-4 mr-2" /> Attendance
           </Button>
           
           <Dialog open={open} onOpenChange={handleOpenDialog}>
-            <DialogTrigger render={<Button className="bg-primary text-black hover:bg-primary/90 font-medium flex-1 md:flex-none" />}>
+            <DialogTrigger render={<Button className="font-medium flex-1 md:flex-none" />}>
                 <Plus className="w-4 h-4 mr-2" /> Add Staff
             </DialogTrigger>
             <DialogContent className="bg-background border-border text-foreground">
@@ -118,7 +118,7 @@ export default function StaffPage() {
                     />
                   </div>
                 </div>
-                <div className="p-3 bg-muted/50 border border-border rounded-md text-sm">
+                <div className="p-3.5 bg-primary/5 border border-primary/15 rounded-xl text-sm">
                   <p className="text-muted-foreground mb-1">Generated Password for Login:</p>
                   <p className="font-mono font-bold text-foreground tracking-wider">{generatedPassword}</p>
                   <p className="text-[10px] text-muted-foreground mt-1">Please copy this password. They will need it to sign in.</p>
@@ -153,7 +153,7 @@ export default function StaffPage() {
                     </Select>
                   </div>
                 </div>
-                <Button type="submit" className="w-full bg-primary text-black hover:bg-primary/90">
+                <Button type="submit" className="w-full">
                   Save Employee
                 </Button>
               </form>
@@ -162,7 +162,7 @@ export default function StaffPage() {
         </div>
       </div>
 
-      <div className="glass border border-border/50 bg-muted/20 rounded-xl p-3 sm:p-4">
+      <div className="glass border border-border/30 bg-card/30 rounded-2xl p-3 sm:p-5">
         <div className="flex flex-col sm:flex-row gap-3 mb-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -170,7 +170,7 @@ export default function StaffPage() {
               placeholder="Search staff..." 
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="pl-9 bg-muted/40 border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-primary/50" 
+              className="pl-9 bg-muted/30 border-border/40 text-foreground placeholder:text-muted-foreground/60 focus-visible:ring-primary/30" 
             />
           </div>
         </div>
@@ -180,14 +180,14 @@ export default function StaffPage() {
           {filteredStaff.map((employee) => (
             <div key={employee.id} className="mobile-card">
               <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#CA8A04] to-[#FCD34D] shadow-[0_0_15px_rgba(202,138,4,0.3)] flex items-center justify-center text-yellow-950 font-black shrink-0 text-lg">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary/40 to-primary/15 shadow-[0_0_12px_rgba(202,138,4,0.2)] flex items-center justify-center text-primary font-black shrink-0 text-lg border border-primary/15">
                   {employee.name.charAt(0)}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
                     <p className="font-semibold text-foreground text-sm truncate">{employee.name}</p>
                     <Badge variant="outline" className={
-                      employee.status === 'Active' ? 'bg-primary/10 text-primary border-primary/20 shrink-0' : 
+                      employee.status === 'Active' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 shrink-0' : 
                       'bg-white/5 text-muted-foreground border-border shrink-0'
                     }>
                       {employee.status}
@@ -205,9 +205,9 @@ export default function StaffPage() {
         </div>
 
         {/* Desktop Table View */}
-        <div className="hidden md:block rounded-md border border-border overflow-x-auto">
+        <div className="hidden md:block rounded-xl border border-border/30 overflow-x-auto">
           <Table>
-            <TableHeader className="bg-muted/40 whitespace-nowrap">
+            <TableHeader className="bg-muted/30 whitespace-nowrap">
               <TableRow className="border-border hover:bg-transparent">
                 <TableHead className="text-muted-foreground">Employee ID</TableHead>
                 <TableHead className="text-muted-foreground">Name</TableHead>
@@ -227,7 +227,7 @@ export default function StaffPage() {
                   <TableCell className="text-muted-foreground">{employee.phone}</TableCell>
                   <TableCell className="text-right">
                     <Badge variant="outline" className={
-                      employee.status === 'Active' ? 'bg-primary/10 text-primary border-primary/20' : 
+                      employee.status === 'Active' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20' : 
                       'bg-white/5 text-muted-foreground border-border'
                     }>
                       {employee.status}

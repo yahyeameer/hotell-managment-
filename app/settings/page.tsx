@@ -36,7 +36,7 @@ export default function SettingsPage() {
       </div>
 
       <div className="grid gap-6">
-        <Card className="glass border-border bg-muted/20">
+        <Card className="glass border-border/30 bg-card/40">
           <CardHeader>
             <CardTitle className="text-foreground">Branding</CardTitle>
             <CardDescription>Update your hotel's name and logo.</CardDescription>
@@ -55,7 +55,7 @@ export default function SettingsPage() {
             <div className="space-y-2">
               <Label className="text-foreground">Hotel Logo</Label>
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                <div className="w-16 h-16 rounded-xl bg-primary/20 flex items-center justify-center shrink-0 border border-primary/50 overflow-hidden">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center shrink-0 border border-primary/30 overflow-hidden shadow-sm">
                   {localLogo ? (
                     <img src={localLogo} alt="Logo" className="w-full h-full object-cover" />
                   ) : (
@@ -85,7 +85,7 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
-        <Card className="glass border-border bg-muted/20">
+        <Card className="glass border-border/30 bg-card/40">
           <CardHeader>
             <CardTitle className="text-foreground">Role Management</CardTitle>
             <CardDescription>Create and manage staff roles and their permissions.</CardDescription>
@@ -120,7 +120,7 @@ export default function SettingsPage() {
                         <label className="flex items-center gap-2 text-sm"><input type="checkbox" className="rounded border-primary" /> Manage Rooms</label>
                       </div>
                     </div>
-                    <Button className="w-full bg-primary text-black hover:bg-primary/90 mt-2">Save Role & Permissions</Button>
+                    <Button className="w-full  mt-2">Save Role & Permissions</Button>
                   </div>
                 </DialogContent>
               </Dialog>
@@ -132,7 +132,7 @@ export default function SettingsPage() {
                 { name: "Receptionist", desc: "Can manage bookings, guests, and payments" },
                 { name: "Housekeeping", desc: "Can view and update room statuses" }
               ].map((role) => (
-                <div key={role.name} className="flex items-center justify-between p-3 rounded-lg border border-border bg-muted/30">
+                <div key={role.name} className="flex items-center justify-between p-3.5 rounded-xl border border-border/30 bg-muted/20 hover:bg-muted/30 transition-colors duration-300">
                   <div>
                     <p className="font-medium text-foreground">{role.name}</p>
                     <p className="text-xs text-muted-foreground">{role.desc}</p>
@@ -144,7 +144,7 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
-        <Card className="glass border-border bg-muted/20">
+        <Card className="glass border-border/30 bg-card/40">
           <CardHeader>
             <CardTitle className="text-foreground">Financial Configuration</CardTitle>
             <CardDescription>Manage currency settings and exchange rates.</CardDescription>
@@ -157,7 +157,7 @@ export default function SettingsPage() {
                   id="primary-currency" 
                   value={localCurrency}
                   onChange={e => setLocalCurrency(e.target.value)}
-                  className="flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-border bg-muted/40 px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 text-foreground [&>span]:line-clamp-1"
+                  className="flex h-11 w-full items-center justify-between whitespace-nowrap rounded-xl border border-input bg-background/50 px-3.5 py-2.5 text-base shadow-sm transition-all duration-300 hover:bg-background/80 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 disabled:cursor-not-allowed disabled:opacity-50 text-foreground"
                 >
                   <option value="USD">USD ($)</option>
                   <option value="SOS">Somaliland Shilling (SOS)</option>
@@ -211,7 +211,7 @@ export default function SettingsPage() {
           </Button>
           <Button 
             onClick={handleSave} 
-            className={`${isSaved ? 'bg-green-500' : 'bg-primary'} text-primary-foreground hover:bg-primary/90 font-medium transition-colors`}
+            className={`font-semibold transition-all duration-500 ${isSaved ? 'bg-emerald-500 hover:bg-emerald-600 shadow-[0_4px_14px_rgba(16,185,129,0.3)]' : ''}`}
           >
             {isSaved ? "Saved Successfully!" : "Save Changes"}
           </Button>
