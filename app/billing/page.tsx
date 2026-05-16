@@ -12,7 +12,7 @@ import { Plus, Search, Filter, CheckCircle2, XCircle, LogOut } from "lucide-reac
 import { useHotel, Booking, Guest, PAYMENT_METHODS, PaymentMethodId } from "@/app/context/HotelContext";
 
 export default function BillingPage() {
-  const { bookings, addBooking, rooms, formatCurrency, formatAmount, addGuest, toUSD, guests, exchangeRate, updateBookingPaymentStatus, endBooking } = useHotel();
+  const { bookings, addBooking, rooms, formatCurrency, formatAmount, addGuest, toUSD, guests, exchangeRate, updateBookingPaymentStatus, updatePromiseToPay, endBooking } = useHotel();
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
 
@@ -80,6 +80,38 @@ export default function BillingPage() {
     return PAYMENT_METHODS.find(p => p.id === id);
   };
 
+  const handleTogglePayment = (e: React.MouseEvent, booking: Booking) => {
+    e.stopPropagation();
+    if (booking.status === "Paid") {
+      const promiseDays = window.prompt("The guest hasn't paid. When will they pay?\n\nEnter number of days (e.g., 1 for tomorrow, 2 for the day after):", "1");
+      if (promiseDays !== null) {
+        const days = parseInt(promiseDays, 10);
+        if (!isNaN(days)) {
+          const d = new Date();
+          d.setDate(d.getDate() + days);
+          updatePromiseToPay(booking.id, d.toISOString());
+        }
+        updateBookingPaymentStatus(booking.id, "Pending");
+      }
+    } else if (booking.status === "Pending") {
+      updatePromiseToPay(booking.id, undefined);
+      updateBookingPaymentStatus(booking.id, "Paid");
+    }
+  };
+
+  const renderPromiseCountdown = (booking: Booking) => {
+    if (booking.status !== "Pending" || !booking.promiseToPayDate) return null;
+    const due = new Date(booking.promiseToPayDate);
+    const now = new Date();
+    const diffHours = (due.getTime() - now.getTime()) / (1000 * 60 * 60);
+    if (diffHours < 0) {
+      return <span className="text-[10px] text-red-500 font-bold ml-2">Overdue!</span>;
+    } else if (diffHours < 24) {
+      return <span className="text-[10px] text-orange-500 font-bold ml-2">Due Soon</span>;
+    }
+    return <span className="text-[10px] text-muted-foreground ml-2">Due in {Math.ceil(diffHours/24)}d</span>;
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -141,7 +173,7 @@ export default function BillingPage() {
                   <Label htmlFor="checkIn">Check In</Label>
                   <Input 
                     id="checkIn" 
-                    type="date"
+                    type="datetime-local"
                     value={checkIn} 
                     onChange={e => setCheckIn(e.target.value)} 
                     required 
@@ -152,7 +184,7 @@ export default function BillingPage() {
                   <Label htmlFor="checkOut">Check Out</Label>
                   <Input 
                     id="checkOut" 
-                    type="date"
+                    type="datetime-local"
                     value={checkOut} 
                     onChange={e => setCheckOut(e.target.value)} 
                     required 
@@ -263,12 +295,16 @@ export default function BillingPage() {
                       <p className="text-xs text-muted-foreground">Room {booking.room}</p>
                     </div>
                   </div>
-                  <Badge variant="outline" className={
-                    booking.status === 'Paid' ? 'bg-primary/10 text-primary border-primary/20' : 
-                    'bg-secondary/10 text-secondary border-secondary/20'
-                  }>
-                    {booking.status}
-                  </Badge>
+                  <div className="text-right flex flex-col items-end">
+                    <Badge variant="outline" className={
+                      booking.status === 'Paid' ? 'bg-primary/10 text-primary border-primary/20' : 
+                      booking.status === 'Checked Out' ? 'bg-slate-500/10 text-slate-400 border-slate-500/20' :
+                      'bg-secondary/10 text-secondary border-secondary/20'
+                    }>
+                      {booking.status}
+                    </Badge>
+                    {renderPromiseCountdown(booking)}
+                  </div>
                 </div>
                 <div className="flex items-center justify-between pt-2 border-t border-border/30">
                   <div className="flex items-center gap-2">
@@ -278,36 +314,37 @@ export default function BillingPage() {
                   <p className="text-sm font-bold text-foreground">{formatAmount(booking.amount, booking.currency)}</p>
                 </div>
                 <div className="flex gap-3 pt-3 border-t border-border/30">
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    className={`flex-1 text-xs h-10 sm:h-9 rounded-xl transition-all duration-300 border-none ${
-                      booking.status === "Paid" 
-                        ? "bg-rose-500/10 text-rose-600 hover:bg-rose-500/20 hover:text-rose-700" 
-                        : "bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 hover:text-emerald-700"
-                    }`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      updateBookingPaymentStatus(booking.id, booking.status === "Paid" ? "Pending" : "Paid");
-                    }}
-                  >
-                    {booking.status === "Paid" ? (
-                      <><XCircle className="w-4 h-4 mr-1.5" /> Muu bixin</>
-                    ) : (
-                      <><CheckCircle2 className="w-4 h-4 mr-1.5" /> Bixiyey</>
-                    )}
-                  </Button>
-                  <Button 
-                    size="sm" 
-                    variant="default" 
-                    className="flex-1 text-xs h-10 sm:h-9 rounded-xl bg-blue-500/10 text-blue-600 hover:bg-blue-500/20 hover:text-blue-700 border-none transition-all duration-300"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      endBooking(booking.id, booking.room);
-                    }}
-                  >
-                    <LogOut className="w-4 h-4 mr-1.5" /> Baxay
-                  </Button>
+                  {booking.status !== "Checked Out" && (
+                    <>
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        className={`flex-1 text-xs h-10 sm:h-9 rounded-xl transition-all duration-300 border-none ${
+                          booking.status === "Paid" 
+                            ? "bg-rose-500/10 text-rose-600 hover:bg-rose-500/20 hover:text-rose-700" 
+                            : "bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 hover:text-emerald-700"
+                        }`}
+                        onClick={(e) => handleTogglePayment(e, booking)}
+                      >
+                        {booking.status === "Paid" ? (
+                          <><XCircle className="w-4 h-4 mr-1.5" /> Muu bixin</>
+                        ) : (
+                          <><CheckCircle2 className="w-4 h-4 mr-1.5" /> Bixiyey</>
+                        )}
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="default" 
+                        className="flex-1 text-xs h-10 sm:h-9 rounded-xl bg-blue-500/10 text-blue-600 hover:bg-blue-500/20 hover:text-blue-700 border-none transition-all duration-300"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          endBooking(booking.id, booking.room);
+                        }}
+                      >
+                        <LogOut className="w-4 h-4 mr-1.5" /> Baxay
+                      </Button>
+                    </>
+                  )}
                 </div>
               </div>
             );
@@ -349,45 +386,50 @@ export default function BillingPage() {
                     </TableCell>
                     <TableCell className="font-bold text-foreground text-right">{formatAmount(booking.amount, booking.currency)}</TableCell>
                     <TableCell className="text-center">
-                      <Badge variant="outline" className={
-                        booking.status === 'Paid' ? 'bg-primary/10 text-primary border-primary/20' : 
-                        'bg-secondary/10 text-secondary border-secondary/20'
-                      }>
-                        {booking.status}
-                      </Badge>
+                      <div className="flex flex-col items-center">
+                        <Badge variant="outline" className={
+                          booking.status === 'Paid' ? 'bg-primary/10 text-primary border-primary/20' : 
+                          booking.status === 'Checked Out' ? 'bg-slate-500/10 text-slate-400 border-slate-500/20' :
+                          'bg-secondary/10 text-secondary border-secondary/20'
+                        }>
+                          {booking.status}
+                        </Badge>
+                        {renderPromiseCountdown(booking)}
+                      </div>
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
-                          className={`h-8 text-xs px-3 transition-all duration-300 border-none ${
-                            booking.status === "Paid" 
-                              ? "bg-rose-500/10 text-rose-600 hover:bg-rose-500/20 hover:text-rose-700" 
-                              : "bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 hover:text-emerald-700"
-                          }`}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            updateBookingPaymentStatus(booking.id, booking.status === "Paid" ? "Pending" : "Paid");
-                          }}
-                        >
-                          {booking.status === "Paid" ? (
-                            <><XCircle className="w-3.5 h-3.5 mr-1.5" /> Muu bixin</>
-                          ) : (
-                            <><CheckCircle2 className="w-3.5 h-3.5 mr-1.5" /> Bixiyey</>
-                          )}
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="default" 
-                          className="h-8 text-xs px-3 bg-blue-500/10 text-blue-600 hover:bg-blue-500/20 hover:text-blue-700 border-none transition-all duration-300"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            endBooking(booking.id, booking.room);
-                          }}
-                        >
-                          <LogOut className="w-3.5 h-3.5 mr-1.5" /> Baxay
-                        </Button>
+                        {booking.status !== "Checked Out" && (
+                          <>
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              className={`h-8 text-xs px-3 transition-all duration-300 border-none ${
+                                booking.status === "Paid" 
+                                  ? "bg-rose-500/10 text-rose-600 hover:bg-rose-500/20 hover:text-rose-700" 
+                                  : "bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 hover:text-emerald-700"
+                              }`}
+                              onClick={(e) => handleTogglePayment(e, booking)}
+                            >
+                              {booking.status === "Paid" ? (
+                                <><XCircle className="w-3.5 h-3.5 mr-1.5" /> Muu bixin</>
+                              ) : (
+                                <><CheckCircle2 className="w-3.5 h-3.5 mr-1.5" /> Bixiyey</>
+                              )}
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="default" 
+                              className="h-8 text-xs px-3 bg-blue-500/10 text-blue-600 hover:bg-blue-500/20 hover:text-blue-700 border-none transition-all duration-300"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                endBooking(booking.id, booking.room);
+                              }}
+                            >
+                              <LogOut className="w-3.5 h-3.5 mr-1.5" /> Baxay
+                            </Button>
+                          </>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>

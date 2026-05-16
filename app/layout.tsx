@@ -10,6 +10,7 @@ const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-headin
 export const metadata: Metadata = {
   title: "Hargeisa Grand Hotel | Management System",
   description: "Lightweight hotel management system",
+  manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",

@@ -20,9 +20,10 @@ export type PaymentMethodId = typeof PAYMENT_METHODS[number]["id"];
 export type Room = { id: string; type: string; status: "Available" | "Occupied" | "Maintenance"; price: number };
 export type Booking = { 
   id: string; guest: string; room: string; checkIn: string; checkOut: string; 
-  amount: number; status: "Paid" | "Pending"; 
+  status: "Paid" | "Pending" | "Checked Out"; 
   paymentMethod: PaymentMethodId;
   currency: "USD" | "SOS";
+  promiseToPayDate?: string; // ISO string date
 };
 export type Expense = { 
   id: string; date: string; description: string; category: string; amount: number;
@@ -47,10 +48,13 @@ interface HotelContextType {
   rooms: Room[];
   addRoom: (room: Room) => void;
   updateRoomStatus: (id: string, status: Room["status"]) => void;
+  deleteRoom: (id: string) => void;
+  editRoom: (id: string, updates: Partial<Room>) => void;
 
   bookings: Booking[];
   addBooking: (booking: Booking) => void;
   updateBookingPaymentStatus: (id: string, status: "Paid" | "Pending") => void;
+  updatePromiseToPay: (id: string, date: string | undefined) => void;
   endBooking: (id: string, room: string) => void;
 
   expenses: Expense[];
@@ -120,7 +124,9 @@ export function HotelProvider({ children }: { children: React.ReactNode }) {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [guests, setGuests] = useState<Guest[]>([]);
   const [staff, setStaff] = useState<Staff[]>([]);
+  const [promiseDates, setPromiseDates] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(true);
+  const fetchFailed = useRef(false);
 
   // Initial Data Fetch - runs once on mount
   useEffect(() => {
@@ -136,6 +142,7 @@ export function HotelProvider({ children }: { children: React.ReactNode }) {
         if (cache.expenses) setExpenses(cache.expenses);
         if (cache.guests) setGuests(cache.guests);
         if (cache.staff) setStaff(cache.staff);
+        if (cache.promiseDates) setPromiseDates(cache.promiseDates);
         setIsLoading(false);
       } catch (e) {
         console.error("Cache parsing error", e);
@@ -186,6 +193,9 @@ export function HotelProvider({ children }: { children: React.ReactNode }) {
         const { data: bookingsData } = await supabase
           .from('bookings').select('*, guests(full_name)').eq('hotel_id', HOTEL_ID);
         if (!cancelled && bookingsData) {
+          const promises = JSON.parse(localStorage.getItem('hotelPromises_' + HOTEL_ID) || '{}');
+          if (Object.keys(promises).length > 0) setPromiseDates(promises);
+
           setBookings(bookingsData.map(b => ({
             id: b.id,
             guest: b.guests?.full_name || 'Unknown Guest',
@@ -193,9 +203,10 @@ export function HotelProvider({ children }: { children: React.ReactNode }) {
             checkIn: b.check_in,
             checkOut: b.check_out,
             amount: b.total_amount,
-            status: b.paid ? "Paid" : "Pending",
+            status: b.room_id === null ? "Checked Out" : (b.paid ? "Paid" : "Pending"),
             paymentMethod: (b.payment_method || "cash_usd") as PaymentMethodId,
-            currency: (b.currency || "USD") as "USD" | "SOS"
+            currency: (b.currency || "USD") as "USD" | "SOS",
+            promiseToPayDate: promises[b.id]
           })));
         }
 
@@ -229,6 +240,7 @@ export function HotelProvider({ children }: { children: React.ReactNode }) {
         }
       } catch (err) {
         console.error("Error fetching hotel data:", err);
+        fetchFailed.current = true;
       }
 
       if (!cancelled) {
@@ -243,10 +255,11 @@ export function HotelProvider({ children }: { children: React.ReactNode }) {
 
   // Sync state to cache whenever it changes (optional but good for saving local updates quickly)
   useEffect(() => {
-    if (isLoading) return;
-    const cache = { rooms, bookings, expenses, guests, staff };
+    if (isLoading || fetchFailed.current) return;
+    const cache = { rooms, bookings, expenses, guests, staff, promiseDates };
     localStorage.setItem('hotelCache_' + HOTEL_ID, JSON.stringify(cache));
-  }, [rooms, bookings, expenses, guests, staff, isLoading]);
+    localStorage.setItem('hotelPromises_' + HOTEL_ID, JSON.stringify(promiseDates));
+  }, [rooms, bookings, expenses, guests, staff, promiseDates, isLoading]);
 
   // Mutations
   const addRoom = useCallback(async (room: Room) => {
@@ -270,6 +283,25 @@ export function HotelProvider({ children }: { children: React.ReactNode }) {
     if (error) console.error("updateRoomStatus error:", error.message);
   }, [supabase]);
 
+  const deleteRoom = useCallback(async (id: string) => {
+    setRooms(prev => prev.filter(r => r.id !== id));
+    const { error } = await supabase.from('rooms').delete().eq('room_number', id).eq('hotel_id', HOTEL_ID);
+    if (error) console.error("deleteRoom error:", error.message);
+  }, [supabase]);
+
+  const editRoom = useCallback(async (id: string, updates: Partial<Room>) => {
+    setRooms(prev => prev.map(r => r.id === id ? { ...r, ...updates } : r));
+    const { error } = await supabase.from('rooms')
+      .update({
+        ...(updates.type && { type: updates.type }),
+        ...(updates.price && { price_per_night: updates.price }),
+        ...(updates.status && { status: updates.status.toLowerCase() })
+      })
+      .eq('room_number', id)
+      .eq('hotel_id', HOTEL_ID);
+    if (error) console.error("editRoom error:", error.message);
+  }, [supabase]);
+
   const addBooking = useCallback(async (booking: Booking) => {
     setBookings(prev => [booking, ...prev]);
     // Mark the room as occupied
@@ -290,7 +322,7 @@ export function HotelProvider({ children }: { children: React.ReactNode }) {
   }, [supabase, updateRoomStatus]);
 
   const updateBookingPaymentStatus = useCallback(async (id: string, status: "Paid" | "Pending") => {
-    setBookings(prev => prev.map(b => b.id === id ? { ...b, status } : b));
+    setBookings(prev => prev.map(b => b.id === id ? { ...b, status: b.room === '-' && status === "Pending" ? "Checked Out" : status } : b));
     const { error } = await supabase.from('bookings')
       .update({ paid: status === "Paid" })
       .eq('id', id)
@@ -298,18 +330,29 @@ export function HotelProvider({ children }: { children: React.ReactNode }) {
     if (error) console.error("updateBookingPaymentStatus error:", error.message);
   }, [supabase]);
 
+  const updatePromiseToPay = useCallback((id: string, date: string | undefined) => {
+    setPromiseDates(prev => {
+      const next = { ...prev };
+      if (date) next[id] = date;
+      else delete next[id];
+      return next;
+    });
+    setBookings(prev => prev.map(b => b.id === id ? { ...b, promiseToPayDate: date } : b));
+  }, []);
+
   const endBooking = useCallback(async (id: string, room: string) => {
     // 1. Mark the room as available
-    updateRoomStatus(room, "Available");
+    if (room && room !== '-') {
+      updateRoomStatus(room, "Available");
+    }
     
-    // 2. We can either remove the booking, or keep it in the list (if we want history). 
-    // Here we'll just keep it in the history, but maybe we can add a 'Completed' status. 
-    // Let's just keep the room available, but the booking remains in the DB.
-    // However, the dashboard logic depends on 'bookings' array. 
-    // Usually a booking shouldn't block the room forever.
-    // If the booking is ended, maybe we can update checkOut date or something.
-    // For now, we'll just free the room.
-  }, [updateRoomStatus]);
+    // 2. Mark booking as Checked Out and remove room association
+    setBookings(prev => prev.map(b => b.id === id ? { ...b, status: "Checked Out", room: "-" } : b));
+    
+    // 3. Update in Supabase
+    const { error } = await supabase.from('bookings').update({ room_id: null }).eq('id', id);
+    if (error) console.error("endBooking error:", error.message);
+  }, [updateRoomStatus, supabase]);
 
   const addExpense = useCallback(async (expense: Expense) => {
     setExpenses(prev => [expense, ...prev]);
@@ -393,8 +436,8 @@ export function HotelProvider({ children }: { children: React.ReactNode }) {
       hotelName, setHotelName, currency, setCurrency, exchangeRate, setExchangeRate,
       logoUrl, setLogoUrl,
       currentUserRole, setCurrentUserRole,
-      rooms, addRoom, updateRoomStatus,
-      bookings, addBooking, updateBookingPaymentStatus, endBooking,
+      rooms, addRoom, updateRoomStatus, deleteRoom, editRoom,
+      bookings, addBooking, updateBookingPaymentStatus, updatePromiseToPay, endBooking,
       expenses, addExpense,
       guests, addGuest,
       staff, addStaff,

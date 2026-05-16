@@ -8,14 +8,16 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus } from "lucide-react";
+import { Plus, Edit2, Trash2 } from "lucide-react";
 import { useHotel, Room } from "@/app/context/HotelContext";
 import { motion } from "framer-motion";
 
 export default function RoomsPage() {
-  const { rooms, addRoom } = useHotel();
+  const { rooms, addRoom, deleteRoom, editRoom, bookings } = useHotel();
   const [filter, setFilter] = useState<string>("All");
   const [open, setOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editingRoom, setEditingRoom] = useState<Room | null>(null);
 
   // Form State
   const [addMode, setAddMode] = useState<"single" | "bulk">("single");
@@ -61,6 +63,30 @@ export default function RoomsPage() {
     
     setOpen(false);
     setRoomId("");
+  };
+
+  const handleEditRoom = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingRoom) return;
+    editRoom(editingRoom.id, {
+      type: editingRoom.type,
+      price: editingRoom.price,
+      status: editingRoom.status
+    });
+    setEditOpen(false);
+    setEditingRoom(null);
+  };
+
+  const getRoomActiveBooking = (roomId: string) => {
+    return bookings.find(b => b.room === roomId && (b.status === "Paid" || b.status === "Pending"));
+  };
+
+  const calculateStayDuration = (checkIn: string, checkOut: string) => {
+    const start = new Date(checkIn).getTime();
+    const end = new Date(checkOut).getTime();
+    const diffHours = (end - start) / (1000 * 60 * 60);
+    if (diffHours < 24) return `${Math.ceil(diffHours)} hours`;
+    return `${Math.ceil(diffHours / 24)} days`;
   };
 
   return (
@@ -178,6 +204,65 @@ export default function RoomsPage() {
             </form>
           </DialogContent>
         </Dialog>
+
+        {/* Edit Room Dialog */}
+        <Dialog open={editOpen} onOpenChange={setEditOpen}>
+          <DialogContent className="bg-background border-border text-foreground">
+            <DialogHeader>
+              <DialogTitle>Edit Room {editingRoom?.id}</DialogTitle>
+            </DialogHeader>
+            {editingRoom && (
+              <form onSubmit={handleEditRoom} className="space-y-4 pt-4">
+                <div className="space-y-2">
+                  <Label>Room Type</Label>
+                  <Select 
+                    value={editingRoom.type} 
+                    onValueChange={(v) => setEditingRoom({ ...editingRoom, type: v })}
+                  >
+                    <SelectTrigger className="bg-muted/40 border-border focus-visible:ring-primary/50">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background border-border text-foreground">
+                      <SelectItem value="Hal Qol">Hal Qol (Single)</SelectItem>
+                      <SelectItem value="Qol Double">Qol Double</SelectItem>
+                      <SelectItem value="Qol Qoyska">Qol Qoyska (Family)</SelectItem>
+                      <SelectItem value="Qol VIP">Qol VIP (Suite)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Status</Label>
+                  <Select 
+                    value={editingRoom.status} 
+                    onValueChange={(v: Room["status"]) => setEditingRoom({ ...editingRoom, status: v })}
+                  >
+                    <SelectTrigger className="bg-muted/40 border-border focus-visible:ring-primary/50">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background border-border text-foreground">
+                      <SelectItem value="Available">Available</SelectItem>
+                      <SelectItem value="Occupied">Occupied</SelectItem>
+                      <SelectItem value="Maintenance">Maintenance</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Base Price (USD)</Label>
+                  <Input 
+                    type="number"
+                    value={editingRoom.price} 
+                    onChange={e => setEditingRoom({ ...editingRoom, price: parseFloat(e.target.value) || 0 })} 
+                    required 
+                    className="bg-muted/40 border-border focus-visible:ring-primary/50"
+                  />
+                </div>
+                <Button type="submit" className="w-full">
+                  Save Changes
+                </Button>
+              </form>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
 
       <div className="flex gap-2 pb-4 overflow-x-auto scrollbar-hide">
@@ -215,7 +300,9 @@ export default function RoomsPage() {
         layout
         className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4"
       >
-        {filteredRooms.map((room, i) => (
+        {filteredRooms.map((room, i) => {
+          const activeBooking = room.status === "Occupied" ? getRoomActiveBooking(room.id) : null;
+          return (
           <motion.div
             key={`${room.id}-${i}`}
             initial={{ opacity: 0, scale: 0.9 }}
@@ -229,9 +316,38 @@ export default function RoomsPage() {
                 'bg-gradient-to-r from-amber-400 to-amber-500'
               }`}></div>
               <div className="absolute inset-0 bg-gradient-to-b from-white/[0.06] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              
+              <div className="absolute top-2 right-2 flex gap-1 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <button 
+                  onClick={(e) => { e.stopPropagation(); setEditingRoom(room); setEditOpen(true); }} 
+                  className="p-1.5 rounded-md hover:bg-white/10 text-muted-foreground hover:text-foreground transition-colors"
+                  title="Edit Room"
+                >
+                  <Edit2 className="w-3.5 h-3.5" />
+                </button>
+                <button 
+                  onClick={(e) => { 
+                    e.stopPropagation(); 
+                    if(confirm(`Are you sure you want to delete Room ${room.id}?`)) deleteRoom(room.id); 
+                  }} 
+                  className="p-1.5 rounded-md hover:bg-red-500/10 text-muted-foreground hover:text-red-500 transition-colors"
+                  title="Delete Room"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
               <CardContent className="p-4 flex flex-col items-center justify-center min-h-[130px] relative z-10">
                 <div className="text-3xl sm:text-4xl font-black text-foreground mb-1.5 group-hover:text-primary transition-colors duration-300 tabular-nums">{room.id}</div>
                 <div className="text-[11px] font-medium text-muted-foreground tracking-wide">{room.type}</div>
+                
+                {activeBooking && (
+                  <div className="mt-2 text-center">
+                    <p className="text-xs font-bold text-foreground truncate max-w-[100px]">{activeBooking.guest}</p>
+                    <p className="text-[10px] text-muted-foreground">{calculateStayDuration(activeBooking.checkIn, activeBooking.checkOut)}</p>
+                  </div>
+                )}
+                
                 <Badge variant="outline" className={`mt-3 text-[10px] uppercase tracking-widest font-bold ${
                   room.status === 'Available' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20' : 
                   room.status === 'Occupied' ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20' : 
@@ -242,7 +358,8 @@ export default function RoomsPage() {
               </CardContent>
             </Card>
           </motion.div>
-        ))}
+          );
+        })}
         {filteredRooms.length === 0 && (
           <div className="col-span-full py-12 text-center text-muted-foreground">
             No rooms found for this filter.
