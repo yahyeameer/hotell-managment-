@@ -4,8 +4,8 @@
   "description": "Premium Hotel Management System",
   "start_url": "/dashboard",
   "display": "standalone",
-  "background_color": "#020817",
-  "theme_color": "#0ea5e9",
+  "background_color": "#0d1525",
+  "theme_color": "#ca8a04",
   "orientation": "portrait",
   "icons": [
     {

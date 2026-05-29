@@ -264,3 +264,75 @@
     background: hsl(var(--muted-foreground) / 0.4);
   }
 }
+
+/* ========== Premium Micro-Interactions ========== */
+
+/* Active press scale for cards and interactive elements */
+.active\:scale-98:active {
+  transform: scale(0.98);
+}
+
+/* Stagger-in animation for lists */
+@keyframes stagger-fade-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-stagger-in {
+  animation: stagger-fade-in 0.35s ease-out both;
+}
+
+/* Badge pulse for live status indicators */
+@keyframes badge-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 hsl(var(--primary) / 0.4); }
+  50% { box-shadow: 0 0 0 6px hsl(var(--primary) / 0); }
+}
+
+.animate-badge-pulse {
+  animation: badge-pulse 2s ease-in-out infinite;
+}
+
+/* Slide-in from right for page transitions */
+@keyframes slide-in-right {
+  from { transform: translateX(16px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.3s ease-out forwards;
+}
+
+/* Scale-in for modals/popups */
+@keyframes scale-in {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.animate-scale-in {
+  animation: scale-in 0.2s ease-out forwards;
+}
+
+/* Gradient text utility */
+.text-gradient-gold {
+  background: linear-gradient(135deg, hsl(43 74% 49%), hsl(43 90% 65%));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Glass input focus ring */
+input:focus, select:focus, textarea:focus {
+  box-shadow: 0 0 0 3px hsl(var(--primary) / 0.15);
+}
+
+/* Premium card hover lift */
+.hover-lift {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+}
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+}
+.dark .hover-lift:hover {
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+}

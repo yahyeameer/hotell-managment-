@@ -53,11 +53,15 @@ function DialogContent({
       <DialogPrimitive.Popup
         data-slot="dialog-content"
         className={cn(
-          "fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-5 rounded-2xl bg-popover p-5 sm:p-6 text-sm text-popover-foreground ring-1 ring-foreground/[0.06] shadow-[0_20px_60px_rgba(0,0,0,0.12)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.4)] duration-200 outline-none sm:max-w-[420px] data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
+          "fixed bottom-0 sm:bottom-auto sm:top-1/2 left-0 sm:left-1/2 z-50 grid w-full max-w-full sm:max-w-[420px] translate-y-0 sm:-translate-x-1/2 sm:-translate-y-1/2 gap-5 rounded-t-3xl sm:rounded-2xl bg-popover p-6 sm:p-6 text-sm text-popover-foreground border-t sm:border border-border/40 shadow-[0_-8px_32px_rgba(0,0,0,0.06)] sm:shadow-[0_20px_60px_rgba(0,0,0,0.12)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.4)] duration-200 outline-none data-open:animate-in data-open:fade-in-0 data-open:slide-in-from-bottom-full sm:data-open:zoom-in-95 sm:data-open:slide-in-from-bottom-0 data-closed:animate-out data-closed:fade-out-0 data-closed:slide-out-to-bottom-full sm:data-closed:zoom-out-95 sm:data-closed:slide-out-to-bottom-0",
           className
         )}
         {...props}
       >
+        {/* Mobile grab handle */}
+        <div className="sm:hidden flex justify-center -mt-3 mb-1">
+          <div className="w-10 h-1 rounded-full bg-muted-foreground/25" />
+        </div>
         {children}
         {showCloseButton && (
           <DialogPrimitive.Close
@@ -102,7 +106,7 @@ function DialogFooter({
     <div
       data-slot="dialog-footer"
       className={cn(
-        "-mx-4 -mb-4 flex flex-col-reverse gap-2 rounded-b-xl border-t bg-muted/50 p-4 sm:flex-row sm:justify-end",
+        "-mx-6 -mb-6 flex flex-col-reverse gap-2 rounded-b-none sm:rounded-b-2xl border-t bg-muted/50 p-6 sm:flex-row sm:justify-end sm:p-4",
         className
       )}
       {...props}

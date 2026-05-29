@@ -175,17 +175,23 @@ export default function ExpensesPage() {
       </div>
 
       <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3">
-        <div className="glass p-3 sm:p-4 rounded-xl border border-border bg-muted/20">
-          <h3 className="text-xs text-muted-foreground mb-1">Total This Month</h3>
-          <p className="text-lg sm:text-2xl font-bold text-foreground">{formatCurrency(totalThisMonth)}</p>
+        <div className="glass p-3 sm:p-4 rounded-xl border border-border bg-muted/20 relative overflow-hidden group hover:bg-muted/30 transition-colors">
+          <div className="absolute -right-4 -top-4 w-16 h-16 bg-rose-500/20 rounded-full blur-2xl group-hover:bg-rose-500/30 transition-all duration-500" />
+          <h3 className="text-xs text-muted-foreground mb-1 font-medium tracking-wide">Total This Month</h3>
+          <p className="text-xl sm:text-3xl font-black text-foreground drop-shadow-sm">{formatCurrency(totalThisMonth)}</p>
+          <p className="text-[10px] text-muted-foreground mt-1">{(totalThisMonth * exchangeRate).toLocaleString()} SOS</p>
         </div>
-        <div className="glass p-3 sm:p-4 rounded-xl border border-border bg-muted/20">
-          <h3 className="text-xs text-muted-foreground mb-1">Highest Category</h3>
-          <p className="text-lg sm:text-2xl font-bold text-foreground">{highestCategory}</p>
+        <div className="glass p-3 sm:p-4 rounded-xl border border-border bg-muted/20 relative overflow-hidden group hover:bg-muted/30 transition-colors">
+          <div className="absolute -right-4 -top-4 w-16 h-16 bg-amber-500/20 rounded-full blur-2xl group-hover:bg-amber-500/30 transition-all duration-500" />
+          <h3 className="text-xs text-muted-foreground mb-1 font-medium tracking-wide">Highest Category</h3>
+          <p className="text-xl sm:text-3xl font-black text-foreground drop-shadow-sm">{highestCategory}</p>
+          <p className="text-[10px] text-muted-foreground mt-1">{formatCurrency(categoryTotals[highestCategory] || 0)}</p>
         </div>
-        <div className="glass p-3 sm:p-4 rounded-xl border border-border bg-muted/20 col-span-2 md:col-span-1">
-          <h3 className="text-xs text-muted-foreground mb-1">Total Entries</h3>
-          <p className="text-lg sm:text-2xl font-bold text-foreground">{expenses.length}</p>
+        <div className="glass p-3 sm:p-4 rounded-xl border border-border bg-muted/20 col-span-2 md:col-span-1 relative overflow-hidden group hover:bg-muted/30 transition-colors">
+          <div className="absolute -right-4 -top-4 w-16 h-16 bg-primary/20 rounded-full blur-2xl group-hover:bg-primary/30 transition-all duration-500" />
+          <h3 className="text-xs text-muted-foreground mb-1 font-medium tracking-wide">Total Entries</h3>
+          <p className="text-xl sm:text-3xl font-black text-foreground drop-shadow-sm">{expenses.length}</p>
+          <p className="text-[10px] text-muted-foreground mt-1">{Object.keys(categoryTotals).length} categories</p>
         </div>
       </div>
 

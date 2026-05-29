@@ -5,14 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search, Filter, CheckCircle2, XCircle, LogOut } from "lucide-react";
+import { Plus, Search, Filter, CheckCircle2, XCircle, LogOut, Edit2, Trash2 } from "lucide-react";
 import { useHotel, Booking, Guest, PAYMENT_METHODS, PaymentMethodId } from "@/app/context/HotelContext";
 
 export default function BillingPage() {
-  const { bookings, addBooking, rooms, formatCurrency, formatAmount, addGuest, toUSD, guests, exchangeRate, updateBookingPaymentStatus, updatePromiseToPay, endBooking } = useHotel();
+  const { bookings, addBooking, editBooking, deleteBooking, rooms, formatCurrency, formatAmount, addGuest, toUSD, guests, exchangeRate, updateBookingPaymentStatus, updatePromiseToPay, endBooking } = useHotel();
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
 
@@ -24,6 +24,15 @@ export default function BillingPage() {
   const [checkOut, setCheckOut] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethodId>("zaad");
   const [bookingCurrency, setBookingCurrency] = useState<"USD" | "SOS">("USD");
+
+  // Custom Promise-to-Pay States
+  const [promisePaymentBooking, setPromisePaymentBooking] = useState<Booking | null>(null);
+  const [customPromiseDate, setCustomPromiseDate] = useState<string>("");
+
+  // Edit Booking State
+  const [editBookingOpen, setEditBookingOpen] = useState(false);
+  const [editingBooking, setEditingBooking] = useState<Booking | null>(null);
+  const [confirmDeleteBooking, setConfirmDeleteBooking] = useState<string | null>(null);
 
   const filteredBookings = bookings.filter(b => 
     b.guest.toLowerCase().includes(search.toLowerCase()) || 
@@ -80,19 +89,29 @@ export default function BillingPage() {
     return PAYMENT_METHODS.find(p => p.id === id);
   };
 
+  const handleConfirmPromiseToPay = (days: number) => {
+    if (!promisePaymentBooking) return;
+    
+    let dateStr: string | undefined;
+    if (days > 0) {
+      const d = new Date();
+      d.setDate(d.getDate() + days);
+      dateStr = d.toISOString();
+    } else {
+      dateStr = customPromiseDate || undefined;
+    }
+    
+    updatePromiseToPay(promisePaymentBooking.id, dateStr);
+    updateBookingPaymentStatus(promisePaymentBooking.id, "Pending");
+    
+    setPromisePaymentBooking(null);
+    setCustomPromiseDate("");
+  };
+
   const handleTogglePayment = (e: React.MouseEvent, booking: Booking) => {
     e.stopPropagation();
     if (booking.status === "Paid") {
-      const promiseDays = window.prompt("The guest hasn't paid. When will they pay?\n\nEnter number of days (e.g., 1 for tomorrow, 2 for the day after):", "1");
-      if (promiseDays !== null) {
-        const days = parseInt(promiseDays, 10);
-        if (!isNaN(days)) {
-          const d = new Date();
-          d.setDate(d.getDate() + days);
-          updatePromiseToPay(booking.id, d.toISOString());
-        }
-        updateBookingPaymentStatus(booking.id, "Pending");
-      }
+      setPromisePaymentBooking(booking);
     } else if (booking.status === "Pending") {
       updatePromiseToPay(booking.id, undefined);
       updateBookingPaymentStatus(booking.id, "Paid");
@@ -110,6 +129,43 @@ export default function BillingPage() {
       return <span className="text-[10px] text-orange-500 font-bold ml-2">Due Soon</span>;
     }
     return <span className="text-[10px] text-muted-foreground ml-2">Due in {Math.ceil(diffHours/24)}d</span>;
+  };
+
+  // Duration display helper
+  const calculateDuration = (start: string, end: string) => {
+    if (!start || !end) return null;
+    const startDate = new Date(start).getTime();
+    const endDate = new Date(end).getTime();
+    if (isNaN(startDate) || isNaN(endDate) || endDate <= startDate) return null;
+    const diffMs = endDate - startDate;
+    const hours = Math.floor(diffMs / (1000 * 60 * 60));
+    const days = Math.floor(hours / 24);
+    const remainingHours = hours % 24;
+    if (days === 0) return `${hours} hour${hours !== 1 ? 's' : ''}`;
+    if (remainingHours === 0) return `${days} day${days !== 1 ? 's' : ''}`;
+    return `${days}d ${remainingHours}h`;
+  };
+
+  const handleEditBooking = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingBooking) return;
+    editBooking(editingBooking.id, {
+      guest: editingBooking.guest,
+      room: editingBooking.room,
+      checkIn: editingBooking.checkIn,
+      checkOut: editingBooking.checkOut,
+      amount: editingBooking.amount,
+      paymentMethod: editingBooking.paymentMethod,
+      currency: editingBooking.currency,
+      status: editingBooking.status
+    });
+    setEditBookingOpen(false);
+    setEditingBooking(null);
+  };
+
+  const handleDeleteBooking = (id: string) => {
+    deleteBooking(id);
+    setConfirmDeleteBooking(null);
   };
 
   return (
@@ -192,6 +248,14 @@ export default function BillingPage() {
                   />
                 </div>
               </div>
+
+              {/* Duration Display */}
+              {checkIn && checkOut && calculateDuration(checkIn, checkOut) && (
+                <div className="p-3 rounded-xl bg-primary/5 border border-primary/15 text-center">
+                  <p className="text-[10px] uppercase tracking-wider text-primary/70 font-semibold">Stay Duration</p>
+                  <p className="text-lg font-black text-primary">{calculateDuration(checkIn, checkOut)}</p>
+                </div>
+              )}
 
               {/* Payment Method Selection */}
               <div className="space-y-2">
@@ -313,7 +377,7 @@ export default function BillingPage() {
                   </div>
                   <p className="text-sm font-bold text-foreground">{formatAmount(booking.amount, booking.currency)}</p>
                 </div>
-                <div className="flex gap-3 pt-3 border-t border-border/30">
+                <div className="flex gap-2 pt-3 border-t border-border/30">
                   {booking.status !== "Checked Out" && (
                     <>
                       <Button 
@@ -344,6 +408,36 @@ export default function BillingPage() {
                         <LogOut className="w-4 h-4 mr-1.5" /> Baxay
                       </Button>
                     </>
+                  )}
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="h-10 sm:h-9 px-3 rounded-xl bg-muted/30 text-muted-foreground hover:bg-muted/50 border-none"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEditingBooking({...booking});
+                      setEditBookingOpen(true);
+                    }}
+                  >
+                    <Edit2 className="w-4 h-4" />
+                  </Button>
+                  {confirmDeleteBooking === booking.id ? (
+                    <div className="flex items-center gap-1 animate-slide-up">
+                      <Button size="sm" variant="destructive" className="h-10 sm:h-9 px-2 text-xs rounded-xl" onClick={(e) => { e.stopPropagation(); handleDeleteBooking(booking.id); }}>Yes</Button>
+                      <Button size="sm" variant="outline" className="h-10 sm:h-9 px-2 text-xs rounded-xl border-none" onClick={(e) => { e.stopPropagation(); setConfirmDeleteBooking(null); }}>No</Button>
+                    </div>
+                  ) : (
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className="h-10 sm:h-9 px-3 rounded-xl bg-rose-500/10 text-rose-600 hover:bg-rose-500/20 border-none"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setConfirmDeleteBooking(booking.id);
+                      }}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
                   )}
                 </div>
               </div>
@@ -430,6 +524,33 @@ export default function BillingPage() {
                             </Button>
                           </>
                         )}
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="h-8 px-2 bg-muted/30 text-muted-foreground hover:bg-muted/50 border-none"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingBooking({...booking});
+                            setEditBookingOpen(true);
+                          }}
+                        >
+                          <Edit2 className="w-3.5 h-3.5" />
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="h-8 px-2 bg-rose-500/10 text-rose-600 hover:bg-rose-500/20 border-none"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (confirmDeleteBooking === booking.id) {
+                              handleDeleteBooking(booking.id);
+                            } else {
+                              setConfirmDeleteBooking(booking.id);
+                            }
+                          }}
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -446,6 +567,195 @@ export default function BillingPage() {
           </Table>
         </div>
       </div>
+
+      {/* Promise-to-Pay Drawer/Dialog */}
+      {promisePaymentBooking && (
+        <Dialog open={!!promisePaymentBooking} onOpenChange={(o) => { if (!o) setPromisePaymentBooking(null); }}>
+          <DialogContent className="bg-background border-border text-foreground">
+            <DialogHeader>
+              <DialogTitle>Muu bixin (Mark Pending)</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 pt-2">
+              <p className="text-sm text-muted-foreground">
+                Goormuu macmiilka <strong className="text-foreground">{promisePaymentBooking.guest}</strong> bixin doonaa lacagta?
+              </p>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { label: "Beri (1d)", days: 1 },
+                  { label: "2 Maalmood", days: 2 },
+                  { label: "3 Maalmood", days: 3 },
+                  { label: "Toddobaad (7d)", days: 7 },
+                  { label: "10 Maalmood", days: 10 },
+                  { label: "15 Maalmood", days: 15 },
+                ].map((opt) => (
+                  <button
+                    key={opt.days}
+                    type="button"
+                    onClick={() => handleConfirmPromiseToPay(opt.days)}
+                    className="py-3 px-2 rounded-xl border border-border/50 bg-muted/20 text-xs font-semibold text-foreground hover:bg-primary/10 hover:border-primary hover:text-primary transition-all active:scale-95 text-center cursor-pointer"
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+              <div className="space-y-2 pt-2 border-t border-border/30">
+                <Label htmlFor="customPromiseDate" className="text-xs text-muted-foreground">Custom Date</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="customPromiseDate"
+                    type="date"
+                    className="bg-muted/40 border-border flex-1 dark:[color-scheme:dark]"
+                    onChange={(e) => {
+                      const dateVal = e.target.value;
+                      if (dateVal) {
+                        const d = new Date(dateVal);
+                        d.setHours(23, 59, 59, 999);
+                        setCustomPromiseDate(d.toISOString());
+                      }
+                    }}
+                  />
+                  <Button 
+                    type="button" 
+                    onClick={() => handleConfirmPromiseToPay(0)}
+                    disabled={!customPromiseDate}
+                  >
+                    Save
+                  </Button>
+                </div>
+              </div>
+            </div>
+            <DialogFooter showCloseButton>
+              <Button variant="outline" className="w-full sm:w-auto" onClick={() => setPromisePaymentBooking(null)}>
+                Cancel
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Edit Booking Dialog */}
+      {editingBooking && (
+        <Dialog open={editBookingOpen} onOpenChange={(o) => { if (!o) { setEditBookingOpen(false); setEditingBooking(null); } }}>
+          <DialogContent className="bg-background border-border text-foreground max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Edit Booking</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleEditBooking} className="space-y-4 pt-2">
+              <div className="space-y-2">
+                <Label htmlFor="editGuest">Guest Name</Label>
+                <Input 
+                  id="editGuest"
+                  value={editingBooking.guest} 
+                  onChange={e => setEditingBooking({...editingBooking, guest: e.target.value})} 
+                  required 
+                  className="bg-muted/40 border-border focus-visible:ring-primary/50"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="editRoom">Room</Label>
+                <Select value={editingBooking.room} onValueChange={(v) => setEditingBooking({...editingBooking, room: v || editingBooking.room})}>
+                  <SelectTrigger className="bg-muted/40 border-border focus-visible:ring-primary/50">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background border-border text-foreground">
+                    {rooms.map(room => (
+                      <SelectItem key={room.id} value={room.id}>
+                        Room {room.id} - {room.type} ({room.status})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="editCheckIn">Check In</Label>
+                  <Input 
+                    id="editCheckIn" 
+                    type="datetime-local"
+                    value={editingBooking.checkIn} 
+                    onChange={e => setEditingBooking({...editingBooking, checkIn: e.target.value})} 
+                    required 
+                    className="bg-muted/40 border-border focus-visible:ring-primary/50 dark:[color-scheme:dark]"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="editCheckOut">Check Out</Label>
+                  <Input 
+                    id="editCheckOut" 
+                    type="datetime-local"
+                    value={editingBooking.checkOut} 
+                    onChange={e => setEditingBooking({...editingBooking, checkOut: e.target.value})} 
+                    required 
+                    className="bg-muted/40 border-border focus-visible:ring-primary/50 dark:[color-scheme:dark]"
+                  />
+                </div>
+              </div>
+
+              {/* Duration Display */}
+              {editingBooking.checkIn && editingBooking.checkOut && calculateDuration(editingBooking.checkIn, editingBooking.checkOut) && (
+                <div className="p-3 rounded-xl bg-primary/5 border border-primary/15 text-center">
+                  <p className="text-[10px] uppercase tracking-wider text-primary/70 font-semibold">Stay Duration</p>
+                  <p className="text-lg font-black text-primary">{calculateDuration(editingBooking.checkIn, editingBooking.checkOut)}</p>
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <Label htmlFor="editAmount">Amount</Label>
+                <Input 
+                  id="editAmount"
+                  type="number"
+                  value={editingBooking.amount} 
+                  onChange={e => setEditingBooking({...editingBooking, amount: parseFloat(e.target.value) || 0})} 
+                  required 
+                  className="bg-muted/40 border-border focus-visible:ring-primary/50"
+                />
+              </div>
+
+              {/* Payment Method */}
+              <div className="space-y-2">
+                <Label>Payment Method</Label>
+                <div className="grid grid-cols-3 gap-2">
+                  {PAYMENT_METHODS.map(pm => (
+                    <button
+                      key={pm.id}
+                      type="button"
+                      onClick={() => {
+                        setEditingBooking({...editingBooking, paymentMethod: pm.id});
+                        if (pm.id === "cash_sos") setEditingBooking(prev => prev ? {...prev, paymentMethod: pm.id, currency: "SOS"} : prev);
+                        else if (pm.id === "cash_usd") setEditingBooking(prev => prev ? {...prev, paymentMethod: pm.id, currency: "USD"} : prev);
+                      }}
+                      className={`flex flex-col items-center gap-1.5 p-3 rounded-2xl border text-xs font-medium transition-all duration-300 active:scale-95 ${
+                        editingBooking.paymentMethod === pm.id 
+                          ? "border-primary bg-primary/10 text-primary shadow-[inset_0_0_12px_rgba(202,138,4,0.1)]" 
+                          : "border-border/50 bg-muted/30 text-muted-foreground hover:bg-muted/50"
+                      }`}
+                    >
+                      <span>{pm.icon}</span>
+                      <span className="truncate w-full text-center">{pm.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex gap-2 pt-2">
+                <Button type="submit" className="flex-1">Save Changes</Button>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  className="bg-rose-500/10 text-rose-600 hover:bg-rose-500/20 border-none px-4"
+                  onClick={() => {
+                    handleDeleteBooking(editingBooking.id);
+                    setEditBookingOpen(false);
+                    setEditingBooking(null);
+                  }}
+                >
+                  <Trash2 className="w-4 h-4 mr-1.5" /> Delete
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }

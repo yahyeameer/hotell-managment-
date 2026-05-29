@@ -13,11 +13,13 @@ import { useHotel, Room } from "@/app/context/HotelContext";
 import { motion } from "framer-motion";
 
 export default function RoomsPage() {
-  const { rooms, addRoom, deleteRoom, editRoom, bookings } = useHotel();
+  const { rooms, addRoom, deleteRoom, editRoom, bookings, guests } = useHotel();
   const [filter, setFilter] = useState<string>("All");
   const [open, setOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [editingRoom, setEditingRoom] = useState<Room | null>(null);
+  const [editRoomNumber, setEditRoomNumber] = useState("");
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   // Form State
   const [addMode, setAddMode] = useState<"single" | "bulk">("single");
@@ -68,13 +70,19 @@ export default function RoomsPage() {
   const handleEditRoom = (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingRoom) return;
-    editRoom(editingRoom.id, {
+    const updates: Partial<Room> = {
       type: editingRoom.type,
       price: editingRoom.price,
       status: editingRoom.status
-    });
+    };
+    // Include new room number if changed
+    if (editRoomNumber && editRoomNumber !== editingRoom.id) {
+      updates.id = editRoomNumber;
+    }
+    editRoom(editingRoom.id, updates);
     setEditOpen(false);
     setEditingRoom(null);
+    setEditRoomNumber("");
   };
 
   const getRoomActiveBooking = (roomId: string) => {
@@ -206,60 +214,142 @@ export default function RoomsPage() {
         </Dialog>
 
         {/* Edit Room Dialog */}
-        <Dialog open={editOpen} onOpenChange={setEditOpen}>
-          <DialogContent className="bg-background border-border text-foreground">
+        <Dialog open={editOpen} onOpenChange={(o) => { if (!o) { setEditOpen(false); setEditingRoom(null); setEditRoomNumber(""); setConfirmDelete(false); } else { if (editingRoom) setEditRoomNumber(editingRoom.id); } }}>
+          <DialogContent className="bg-background border-border text-foreground max-h-[95vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Edit Room {editingRoom?.id}</DialogTitle>
+              <DialogTitle className="text-lg font-bold">Room {editingRoom?.id} Details</DialogTitle>
             </DialogHeader>
             {editingRoom && (
-              <form onSubmit={handleEditRoom} className="space-y-4 pt-4">
-                <div className="space-y-2">
-                  <Label>Room Type</Label>
-                  <Select 
-                    value={editingRoom.type} 
-                    onValueChange={(v) => setEditingRoom({ ...editingRoom, type: v })}
-                  >
-                    <SelectTrigger className="bg-muted/40 border-border focus-visible:ring-primary/50">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-background border-border text-foreground">
-                      <SelectItem value="Hal Qol">Hal Qol (Single)</SelectItem>
-                      <SelectItem value="Qol Double">Qol Double</SelectItem>
-                      <SelectItem value="Qol Qoyska">Qol Qoyska (Family)</SelectItem>
-                      <SelectItem value="Qol VIP">Qol VIP (Suite)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Status</Label>
-                  <Select 
-                    value={editingRoom.status} 
-                    onValueChange={(v: Room["status"]) => setEditingRoom({ ...editingRoom, status: v })}
-                  >
-                    <SelectTrigger className="bg-muted/40 border-border focus-visible:ring-primary/50">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-background border-border text-foreground">
-                      <SelectItem value="Available">Available</SelectItem>
-                      <SelectItem value="Occupied">Occupied</SelectItem>
-                      <SelectItem value="Maintenance">Maintenance</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Base Price (USD)</Label>
-                  <Input 
-                    type="number"
-                    value={editingRoom.price} 
-                    onChange={e => setEditingRoom({ ...editingRoom, price: parseFloat(e.target.value) || 0 })} 
-                    required 
-                    className="bg-muted/40 border-border focus-visible:ring-primary/50"
-                  />
-                </div>
-                <Button type="submit" className="w-full">
-                  Save Changes
-                </Button>
-              </form>
+              <div className="space-y-4 pt-1">
+                {/* Active Booking Info if Occupied */}
+                {editingRoom.status === "Occupied" && (() => {
+                  const activeBooking = getRoomActiveBooking(editingRoom.id);
+                  if (activeBooking) {
+                    return (
+                      <div className="p-4 rounded-2xl bg-muted/40 border border-border/50 space-y-2">
+                        <h4 className="text-[10px] font-bold uppercase tracking-wider text-primary">Active Booking</h4>
+                        <div className="flex justify-between items-center">
+                          <p className="font-semibold text-foreground text-sm">{activeBooking.guest}</p>
+                          <Badge className="bg-primary/10 text-primary border-primary/25">{activeBooking.status}</Badge>
+                        </div>
+                        <div className="text-xs text-muted-foreground grid grid-cols-2 gap-2 pt-1 border-t border-border/20 mt-1">
+                          <div>
+                            <span className="block text-[9px] text-muted-foreground/75 font-semibold">DURATION</span>
+                            <strong className="text-foreground">{calculateStayDuration(activeBooking.checkIn, activeBooking.checkOut)}</strong>
+                          </div>
+                          <div>
+                            <span className="block text-[9px] text-muted-foreground/75 font-semibold">CHECK OUT</span>
+                            <strong className="text-foreground">{new Date(activeBooking.checkOut).toLocaleDateString()}</strong>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
+
+                <form onSubmit={handleEditRoom} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="editRoomNumber">Room Number</Label>
+                    <Input 
+                      id="editRoomNumber"
+                      value={editRoomNumber || editingRoom.id} 
+                      onChange={e => setEditRoomNumber(e.target.value)} 
+                      required 
+                      placeholder="e.g. 104"
+                      className="bg-muted/40 border-border focus-visible:ring-primary/50 text-lg font-bold"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="editType">Room Type</Label>
+                    <Select 
+                      value={editingRoom.type} 
+                      onValueChange={(v) => setEditingRoom({ ...editingRoom, type: v || "" })}
+                    >
+                      <SelectTrigger id="editType" className="bg-muted/40 border-border focus-visible:ring-primary/50">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background border-border text-foreground">
+                        <SelectItem value="Hal Qol">Hal Qol (Single)</SelectItem>
+                        <SelectItem value="Qol Double">Qol Double</SelectItem>
+                        <SelectItem value="Qol Qoyska">Qol Qoyska (Family)</SelectItem>
+                        <SelectItem value="Qol VIP">Qol VIP (Suite)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="editStatus">Status</Label>
+                    <Select 
+                      value={editingRoom.status} 
+                      onValueChange={(v) => setEditingRoom({ ...editingRoom, status: (v || "Available") as Room["status"] })}
+                    >
+                      <SelectTrigger id="editStatus" className="bg-muted/40 border-border focus-visible:ring-primary/50">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background border-border text-foreground">
+                        <SelectItem value="Available">Available</SelectItem>
+                        <SelectItem value="Occupied">Occupied</SelectItem>
+                        <SelectItem value="Maintenance">Maintenance</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="editPrice">Base Price (USD)</Label>
+                    <Input 
+                      id="editPrice"
+                      type="number"
+                      value={editingRoom.price} 
+                      onChange={e => setEditingRoom({ ...editingRoom, price: parseFloat(e.target.value) || 0 })} 
+                      required 
+                      className="bg-muted/40 border-border focus-visible:ring-primary/50"
+                    />
+                  </div>
+
+                  <div className="flex gap-2 pt-2">
+                    <Button type="submit" className="flex-1">
+                      Save Changes
+                    </Button>
+                    
+                    {!confirmDelete ? (
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        className="bg-rose-500/10 text-rose-600 hover:bg-rose-500/20 hover:text-rose-700 border-none px-3"
+                        onClick={() => setConfirmDelete(true)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    ) : (
+                      <div className="flex items-center gap-2 flex-1 animate-slide-up bg-rose-500/5 border border-rose-500/10 p-2 rounded-xl">
+                        <span className="text-[10px] text-rose-500 font-bold whitespace-nowrap">Sure?</span>
+                        <Button 
+                          type="button" 
+                          variant="destructive" 
+                          size="sm"
+                          className="h-8 px-2.5 text-xs"
+                          onClick={() => {
+                            deleteRoom(editingRoom.id);
+                            setEditOpen(false);
+                            setEditingRoom(null);
+                            setConfirmDelete(false);
+                          }}
+                        >
+                          Yes
+                        </Button>
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          size="sm"
+                          className="h-8 px-2.5 text-xs"
+                          onClick={() => setConfirmDelete(false)}
+                        >
+                          No
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </form>
+              </div>
             )}
           </DialogContent>
         </Dialog>
@@ -309,33 +399,16 @@ export default function RoomsPage() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: i * 0.025, duration: 0.3 }}
           >
-            <Card className="glass border-border/30 bg-card/40 hover:bg-card/60 hover:shadow-[0_12px_40px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_12px_40px_rgba(0,0,0,0.3)] hover:scale-[1.04] transition-all duration-300 cursor-pointer group relative overflow-hidden">
+            <Card 
+              onClick={() => { setEditingRoom(room); setEditRoomNumber(room.id); setEditOpen(true); }}
+              className="glass border-border/30 bg-card/40 hover:bg-card/60 hover:shadow-[0_12px_40px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_12px_40px_rgba(0,0,0,0.3)] hover:scale-[1.04] transition-all duration-300 cursor-pointer group relative overflow-hidden active:scale-98"
+            >
               <div className={`absolute top-0 left-0 w-full h-[3px] ${
                 room.status === 'Available' ? 'bg-gradient-to-r from-emerald-400 to-emerald-500' : 
                 room.status === 'Occupied' ? 'bg-gradient-to-r from-rose-400 to-rose-500' : 
                 'bg-gradient-to-r from-amber-400 to-amber-500'
               }`}></div>
               <div className="absolute inset-0 bg-gradient-to-b from-white/[0.06] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              
-              <div className="absolute top-2 right-2 flex gap-1 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <button 
-                  onClick={(e) => { e.stopPropagation(); setEditingRoom(room); setEditOpen(true); }} 
-                  className="p-1.5 rounded-md hover:bg-white/10 text-muted-foreground hover:text-foreground transition-colors"
-                  title="Edit Room"
-                >
-                  <Edit2 className="w-3.5 h-3.5" />
-                </button>
-                <button 
-                  onClick={(e) => { 
-                    e.stopPropagation(); 
-                    if(confirm(`Are you sure you want to delete Room ${room.id}?`)) deleteRoom(room.id); 
-                  }} 
-                  className="p-1.5 rounded-md hover:bg-red-500/10 text-muted-foreground hover:text-red-500 transition-colors"
-                  title="Delete Room"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
-              </div>
 
               <CardContent className="p-4 flex flex-col items-center justify-center min-h-[130px] relative z-10">
                 <div className="text-3xl sm:text-4xl font-black text-foreground mb-1.5 group-hover:text-primary transition-colors duration-300 tabular-nums">{room.id}</div>
@@ -344,6 +417,9 @@ export default function RoomsPage() {
                 {activeBooking && (
                   <div className="mt-2 text-center">
                     <p className="text-xs font-bold text-foreground truncate max-w-[100px]">{activeBooking.guest}</p>
+                    <p className="text-[10px] text-muted-foreground">
+                      {(() => { const g = guests.find(gg => gg.name === activeBooking.guest); return g?.phone && g.phone !== '-' ? g.phone : ''; })()}
+                    </p>
                     <p className="text-[10px] text-muted-foreground">{calculateStayDuration(activeBooking.checkIn, activeBooking.checkOut)}</p>
                   </div>
                 )}

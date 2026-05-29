@@ -106,8 +106,8 @@ export default function DashboardPage() {
         </div>
       </motion.div>
 
-      {/* Stat Cards */}
-      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+      {/* Stat Cards - Horizontal scroll on mobile, Grid on desktop */}
+      <div className="flex overflow-x-auto scrollbar-hide snap-x snap-mandatory gap-3 pb-3 sm:pb-0 sm:grid sm:grid-cols-2 lg:grid-cols-4 sm:gap-4 -mx-3 px-3 sm:mx-0 sm:px-0 w-[calc(100%+1.5rem)] sm:w-full">
         {[
           { title: "Revenue", icon: CreditCard, value: formatCurrency(totalRevenue), sub: `${(totalRevenue * exchangeRate).toLocaleString()} SOS`, color: "text-primary", bg: "bg-primary/10" },
           { title: "Guests", icon: Users, value: activeGuests.toString(), sub: "Total registered", color: "text-blue-500", bg: "bg-blue-500/10" },
@@ -119,6 +119,7 @@ export default function DashboardPage() {
             variants={itemVariants}
             whileHover={{ scale: 1.02 }}
             transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            className="snap-start shrink-0 w-[260px] sm:w-auto sm:shrink sm:flex-1"
           >
             <Card className="glass border-border/50 bg-muted/20 overflow-hidden relative group shadow-lg hover:shadow-xl transition-shadow">
               <div className={`absolute inset-0 ${stat.bg} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />

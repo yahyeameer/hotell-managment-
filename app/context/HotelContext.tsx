@@ -20,6 +20,7 @@ export type PaymentMethodId = typeof PAYMENT_METHODS[number]["id"];
 export type Room = { id: string; type: string; status: "Available" | "Occupied" | "Maintenance"; price: number };
 export type Booking = { 
   id: string; guest: string; room: string; checkIn: string; checkOut: string; 
+  amount: number;
   status: "Paid" | "Pending" | "Checked Out"; 
   paymentMethod: PaymentMethodId;
   currency: "USD" | "SOS";
@@ -53,6 +54,8 @@ interface HotelContextType {
 
   bookings: Booking[];
   addBooking: (booking: Booking) => void;
+  editBooking: (id: string, updates: Partial<Booking>) => void;
+  deleteBooking: (id: string) => void;
   updateBookingPaymentStatus: (id: string, status: "Paid" | "Pending") => void;
   updatePromiseToPay: (id: string, date: string | undefined) => void;
   endBooking: (id: string, room: string) => void;
@@ -143,6 +146,12 @@ export function HotelProvider({ children }: { children: React.ReactNode }) {
         if (cache.guests) setGuests(cache.guests);
         if (cache.staff) setStaff(cache.staff);
         if (cache.promiseDates) setPromiseDates(cache.promiseDates);
+        
+        // Load hotel settings from cache too
+        if (cache.hotelName) setHotelNameState(cache.hotelName);
+        if (cache.currency) setCurrencyState(cache.currency);
+        if (cache.exchangeRate) setExchangeRateState(cache.exchangeRate);
+        
         setIsLoading(false);
       } catch (e) {
         console.error("Cache parsing error", e);
@@ -256,10 +265,10 @@ export function HotelProvider({ children }: { children: React.ReactNode }) {
   // Sync state to cache whenever it changes (optional but good for saving local updates quickly)
   useEffect(() => {
     if (isLoading || fetchFailed.current) return;
-    const cache = { rooms, bookings, expenses, guests, staff, promiseDates };
+    const cache = { rooms, bookings, expenses, guests, staff, promiseDates, hotelName, currency, exchangeRate };
     localStorage.setItem('hotelCache_' + HOTEL_ID, JSON.stringify(cache));
     localStorage.setItem('hotelPromises_' + HOTEL_ID, JSON.stringify(promiseDates));
-  }, [rooms, bookings, expenses, guests, staff, promiseDates, isLoading]);
+  }, [rooms, bookings, expenses, guests, staff, promiseDates, hotelName, currency, exchangeRate, isLoading]);
 
   // Mutations
   const addRoom = useCallback(async (room: Room) => {
@@ -290,16 +299,36 @@ export function HotelProvider({ children }: { children: React.ReactNode }) {
   }, [supabase]);
 
   const editRoom = useCallback(async (id: string, updates: Partial<Room>) => {
-    setRooms(prev => prev.map(r => r.id === id ? { ...r, ...updates } : r));
-    const { error } = await supabase.from('rooms')
-      .update({
-        ...(updates.type && { type: updates.type }),
-        ...(updates.price && { price_per_night: updates.price }),
-        ...(updates.status && { status: updates.status.toLowerCase() })
-      })
-      .eq('room_number', id)
-      .eq('hotel_id', HOTEL_ID);
-    if (error) console.error("editRoom error:", error.message);
+    const oldId = id;
+    const newId = updates.id || id;
+    
+    // Update room in local state
+    setRooms(prev => prev.map(r => r.id === oldId ? { ...r, ...updates } : r));
+    
+    // If room number changed, cascade to bookings
+    if (updates.id && updates.id !== oldId) {
+      setBookings(prev => prev.map(b => b.room === oldId ? { ...b, room: newId } : b));
+      // Update bookings in Supabase
+      await supabase.from('bookings')
+        .update({ room_id: newId })
+        .eq('room_id', oldId)
+        .eq('hotel_id', HOTEL_ID);
+    }
+    
+    // Build the Supabase update payload
+    const dbUpdates: Record<string, unknown> = {};
+    if (updates.type) dbUpdates.type = updates.type;
+    if (updates.price) dbUpdates.price_per_night = updates.price;
+    if (updates.status) dbUpdates.status = updates.status.toLowerCase();
+    if (updates.id && updates.id !== oldId) dbUpdates.room_number = newId;
+    
+    if (Object.keys(dbUpdates).length > 0) {
+      const { error } = await supabase.from('rooms')
+        .update(dbUpdates)
+        .eq('room_number', oldId)
+        .eq('hotel_id', HOTEL_ID);
+      if (error) console.error("editRoom error:", error.message);
+    }
   }, [supabase]);
 
   const addBooking = useCallback(async (booking: Booking) => {
@@ -319,6 +348,54 @@ export function HotelProvider({ children }: { children: React.ReactNode }) {
       currency: booking.currency
     });
     if (error) console.error("addBooking error:", error.message);
+  }, [supabase, updateRoomStatus]);
+
+  const editBooking = useCallback(async (id: string, updates: Partial<Booking>) => {
+    // If room assignment changed, update old room to Available and new room to Occupied
+    const oldBooking = bookings.find(b => b.id === id);
+    if (oldBooking && updates.room && updates.room !== oldBooking.room) {
+      if (oldBooking.room && oldBooking.room !== '-') {
+        updateRoomStatus(oldBooking.room, "Available");
+      }
+      if (updates.room !== '-') {
+        updateRoomStatus(updates.room, "Occupied");
+      }
+    }
+    
+    setBookings(prev => prev.map(b => b.id === id ? { ...b, ...updates } : b));
+    
+    const dbUpdates: Record<string, unknown> = {};
+    if (updates.guest !== undefined) dbUpdates.guest_name = updates.guest;
+    if (updates.room !== undefined) dbUpdates.room_id = updates.room === '-' ? null : updates.room;
+    if (updates.checkIn !== undefined) dbUpdates.check_in = updates.checkIn;
+    if (updates.checkOut !== undefined) dbUpdates.check_out = updates.checkOut;
+    if (updates.amount !== undefined) dbUpdates.total_amount = updates.amount;
+    if (updates.paymentMethod !== undefined) dbUpdates.payment_method = updates.paymentMethod;
+    if (updates.currency !== undefined) dbUpdates.currency = updates.currency;
+    if (updates.status !== undefined) dbUpdates.paid = updates.status === 'Paid';
+    
+    if (Object.keys(dbUpdates).length > 0) {
+      const { error } = await supabase.from('bookings')
+        .update(dbUpdates)
+        .eq('id', id)
+        .eq('hotel_id', HOTEL_ID);
+      if (error) console.error("editBooking error:", error.message);
+    }
+  }, [supabase, bookings, updateRoomStatus]);
+
+  const deleteBooking = useCallback(async (id: string) => {
+    const booking = bookings.find(b => b.id === id);
+    // Free the room if the booking had an active room
+    if (booking && booking.room && booking.room !== '-' && booking.status !== 'Checked Out') {
+      updateRoomStatus(booking.room, "Available");
+    }
+    
+    setBookings(prev => prev.filter(b => b.id !== id));
+    
+    const { error } = await supabase.from('bookings').delete()
+      .eq('id', id)
+      .eq('hotel_id', HOTEL_ID);
+    if (error) console.error("deleteBooking error:", error.message);
   }, [supabase, updateRoomStatus]);
 
   const updateBookingPaymentStatus = useCallback(async (id: string, status: "Paid" | "Pending") => {
@@ -392,25 +469,7 @@ export function HotelProvider({ children }: { children: React.ReactNode }) {
     if (error) console.error("addStaff error:", error.message);
   }, [supabase]);
 
-  // Keep hotel settings in sync (debounced — only when values actually change)
-  const settingsTimerRef = useRef<NodeJS.Timeout | null>(null);
-  useEffect(() => {
-    if (isLoading) return;
-    
-    if (settingsTimerRef.current) clearTimeout(settingsTimerRef.current);
-    settingsTimerRef.current = setTimeout(async () => {
-      const { error } = await supabase
-        .from('hotels')
-        .update({ name: hotelName, currency_primary: currency })
-        .eq('id', HOTEL_ID);
-      if (error) console.error("Settings sync error:", error.message);
-    }, 1000);
 
-    return () => {
-      if (settingsTimerRef.current) clearTimeout(settingsTimerRef.current);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hotelName, currency, isLoading]);
 
   // Convert amount to USD equivalent
   const toUSD = useCallback((amount: number, cur: "USD" | "SOS"): number => {
@@ -437,7 +496,7 @@ export function HotelProvider({ children }: { children: React.ReactNode }) {
       logoUrl, setLogoUrl,
       currentUserRole, setCurrentUserRole,
       rooms, addRoom, updateRoomStatus, deleteRoom, editRoom,
-      bookings, addBooking, updateBookingPaymentStatus, updatePromiseToPay, endBooking,
+      bookings, addBooking, editBooking, deleteBooking, updateBookingPaymentStatus, updatePromiseToPay, endBooking,
       expenses, addExpense,
       guests, addGuest,
       staff, addStaff,
