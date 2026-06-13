@@ -29,8 +29,8 @@ export function MobileNav() {
   const { currentUserRole } = useHotel();
 
   const filteredQuickActions = quickActions.filter(action => {
-    if (currentUserRole !== "Manager" && currentUserRole !== "Admin") {
-      if (action.label === "Add Expense") return false;
+    if (currentUserRole !== "Admin") {
+      if (action.label === "Kharashaad Cusub" || action.label === "Add Expense") return false;
     }
     return true;
   });

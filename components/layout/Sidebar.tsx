@@ -32,7 +32,7 @@ export function SidebarContent() {
   const { hotelName, currentUserRole } = useHotel();
 
   const visibleRoutes = routes.filter(r => {
-    if (currentUserRole !== "Manager" && currentUserRole !== "Admin") {
+    if (currentUserRole !== "Admin") {
       if (["Expenses", "Profit", "Staff", "Settings"].includes(r.filterKey)) {
         return false;
       }
