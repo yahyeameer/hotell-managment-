@@ -5,14 +5,16 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Search } from "lucide-react";
 import { useHotel } from "@/app/context/HotelContext";
+import { useDebounce } from "@/hooks/useDebounce";
 
 export default function GuestsPage() {
   const { guests, formatCurrency } = useHotel();
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 300);
 
   const filteredGuests = guests.filter(g => 
-    g.name.toLowerCase().includes(search.toLowerCase()) || 
-    g.phone.includes(search)
+    g.name.toLowerCase().includes(debouncedSearch.toLowerCase()) || 
+    g.phone.includes(debouncedSearch)
   );
 
   return (

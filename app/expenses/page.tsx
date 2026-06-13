@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Search, DollarSign, Coins } from "lucide-react";
 import { useHotel, Expense, PAYMENT_METHODS, PaymentMethodId } from "@/app/context/HotelContext";
+import { useDebounce } from "@/hooks/useDebounce";
 
 export default function ExpensesPage() {
   const { expenses, addExpense, formatCurrency, formatAmount, toUSD, exchangeRate } = useHotel();
@@ -23,10 +24,12 @@ export default function ExpensesPage() {
   const [amount, setAmount] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethodId>("cash_usd");
   const [expenseCurrency, setExpenseCurrency] = useState<"USD" | "SOS">("USD");
+  
+  const debouncedSearch = useDebounce(search, 300);
 
   const filteredExpenses = expenses.filter(e => 
-    e.description.toLowerCase().includes(search.toLowerCase()) || 
-    e.category.toLowerCase().includes(search.toLowerCase())
+    e.description.toLowerCase().includes(debouncedSearch.toLowerCase()) || 
+    e.category.toLowerCase().includes(debouncedSearch.toLowerCase())
   );
 
   const totalThisMonth = expenses.reduce((sum, e) => sum + toUSD(e.amount, e.currency), 0);

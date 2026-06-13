@@ -11,10 +11,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Search, UserCheck, KeyRound } from "lucide-react";
 import { useHotel, Staff } from "@/app/context/HotelContext";
 import { createStaffUser, resetStaffPassword } from "./actions";
+import { useDebounce } from "@/hooks/useDebounce";
 
 export default function StaffPage() {
   const { staff, addStaff } = useHotel();
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 300);
   const [open, setOpen] = useState(false);
 
   // Form State
@@ -27,8 +29,8 @@ export default function StaffPage() {
   const [generatedPassword, setGeneratedPassword] = useState("");
 
   const filteredStaff = staff.filter(s => 
-    s.name.toLowerCase().includes(search.toLowerCase()) || 
-    s.role.toLowerCase().includes(search.toLowerCase())
+    s.name.toLowerCase().includes(debouncedSearch.toLowerCase()) || 
+    s.role.toLowerCase().includes(debouncedSearch.toLowerCase())
   );
 
   const handleAddStaff = async (e: React.FormEvent) => {

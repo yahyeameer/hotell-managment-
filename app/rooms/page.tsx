@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Edit2, Trash2 } from "lucide-react";
 import { useHotel, Room } from "@/app/context/HotelContext";
 import { motion } from "framer-motion";
+import { useDebounce } from "@/hooks/useDebounce";
 
 export default function RoomsPage() {
   const { rooms, addRoom, deleteRoom, editRoom, bookings, guests, endBooking } = useHotel();
@@ -31,8 +32,14 @@ export default function RoomsPage() {
   const [bulkCount, setBulkCount] = useState("10");
   const [bulkStart, setBulkStart] = useState("101");
   const [bulkPrefix, setBulkPrefix] = useState("");
+  const [editPrice, setEditPrice] = useState("");
+  
+  const debouncedSearch = useDebounce(search, 300);
 
-  const filteredRooms = rooms.filter(room => filter === "All" ? true : room.status === filter);
+  const filteredRooms = rooms.filter(r => 
+    r.id.toLowerCase().includes(debouncedSearch.toLowerCase()) || 
+    r.type.toLowerCase().includes(debouncedSearch.toLowerCase())
+  ).filter(room => filter === "All" ? true : room.status === filter);
 
   const availableCount = rooms.filter(r => r.status === "Available").length;
   const occupiedCount = rooms.filter(r => r.status === "Occupied").length;

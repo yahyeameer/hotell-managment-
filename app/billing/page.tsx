@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Search, Filter, CheckCircle2, XCircle, LogOut, Edit2, Trash2 } from "lucide-react";
 import { useHotel, Booking, Guest, PAYMENT_METHODS, PaymentMethodId } from "@/app/context/HotelContext";
+import { useDebounce } from "@/hooks/useDebounce";
 
 export default function BillingPage() {
   const { bookings, addBooking, editBooking, deleteBooking, rooms, formatCurrency, formatAmount, addGuest, toUSD, guests, exchangeRate, updateBookingPaymentStatus, updatePromiseToPay, endBooking } = useHotel();
@@ -33,10 +34,12 @@ export default function BillingPage() {
   const [editBookingOpen, setEditBookingOpen] = useState(false);
   const [editingBooking, setEditingBooking] = useState<Booking | null>(null);
   const [confirmDeleteBooking, setConfirmDeleteBooking] = useState<string | null>(null);
+  
+  const debouncedSearch = useDebounce(search, 300);
 
   const filteredBookings = bookings.filter(b => 
-    b.guest.toLowerCase().includes(search.toLowerCase()) || 
-    b.id.toLowerCase().includes(search.toLowerCase())
+    b.guest.toLowerCase().includes(debouncedSearch.toLowerCase()) || 
+    b.id.toLowerCase().includes(debouncedSearch.toLowerCase())
   );
 
   const handleAddBooking = (e: React.FormEvent) => {

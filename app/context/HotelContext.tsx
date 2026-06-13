@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from "react";
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 import { Smartphone, CreditCard, Wallet, Banknote, Coins } from "lucide-react";
@@ -501,19 +501,32 @@ export function HotelProvider({ children }: { children: React.ReactNode }) {
     return `${amount.toLocaleString()} SOS`;
   }, []);
 
+  const contextValue = useMemo(() => ({
+    hotelName, setHotelName, currency, setCurrency, exchangeRate, setExchangeRate,
+    logoUrl, setLogoUrl,
+    currentUserRole, setCurrentUserRole,
+    rooms, addRoom, updateRoomStatus, deleteRoom, editRoom,
+    bookings, addBooking, editBooking, deleteBooking, updateBookingPaymentStatus, updatePromiseToPay, endBooking,
+    expenses, addExpense,
+    guests, addGuest,
+    staff, addStaff,
+    formatCurrency, formatAmount, toUSD,
+    isLoading
+  }), [
+    hotelName, setHotelName, currency, setCurrency, exchangeRate, setExchangeRate,
+    logoUrl, setLogoUrl,
+    currentUserRole, setCurrentUserRole,
+    rooms, addRoom, updateRoomStatus, deleteRoom, editRoom,
+    bookings, addBooking, editBooking, deleteBooking, updateBookingPaymentStatus, updatePromiseToPay, endBooking,
+    expenses, addExpense,
+    guests, addGuest,
+    staff, addStaff,
+    formatCurrency, formatAmount, toUSD,
+    isLoading
+  ]);
+
   return (
-    <HotelContext.Provider value={{
-      hotelName, setHotelName, currency, setCurrency, exchangeRate, setExchangeRate,
-      logoUrl, setLogoUrl,
-      currentUserRole, setCurrentUserRole,
-      rooms, addRoom, updateRoomStatus, deleteRoom, editRoom,
-      bookings, addBooking, editBooking, deleteBooking, updateBookingPaymentStatus, updatePromiseToPay, endBooking,
-      expenses, addExpense,
-      guests, addGuest,
-      staff, addStaff,
-      formatCurrency, formatAmount, toUSD,
-      isLoading
-    }}>
+    <HotelContext.Provider value={contextValue}>
       {children}
     </HotelContext.Provider>
   );
