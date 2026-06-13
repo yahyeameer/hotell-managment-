@@ -19,8 +19,8 @@ export default function GuestsPage() {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">Guests Directory</h2>
-          <p className="text-muted-foreground text-xs sm:text-sm mt-0.5">View guest history, contact info, and lifetime value.</p>
+          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">Liiska Martida</h2>
+          <p className="text-muted-foreground text-xs sm:text-sm mt-0.5">Arag taariikhda martida, xiriirka, iyo qiimaha guud.</p>
         </div>
       </div>
 
@@ -29,7 +29,7 @@ export default function GuestsPage() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input 
-              placeholder="Search guests..." 
+              placeholder="Raadi martida..." 
               value={search}
               onChange={e => setSearch(e.target.value)}
               className="pl-9 bg-muted/30 border-border/40 text-foreground placeholder:text-muted-foreground/60 focus-visible:ring-primary/30" 
@@ -51,13 +51,13 @@ export default function GuestsPage() {
                 </div>
               </div>
               <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-border/20">
-                <span className="text-xs text-muted-foreground">{guest.totalStays} stays</span>
+                <span className="text-xs text-muted-foreground">{guest.totalStays} jeer</span>
                 <span className="text-sm font-bold text-primary">{formatCurrency(guest.lifetimeValue)}</span>
               </div>
             </div>
           ))}
           {filteredGuests.length === 0 && (
-            <div className="text-center py-12 text-muted-foreground text-sm">No guests found.</div>
+            <div className="text-center py-12 text-muted-foreground text-sm">Wax marti ah lama helin.</div>
           )}
         </div>
 
@@ -66,12 +66,12 @@ export default function GuestsPage() {
           <Table>
             <TableHeader className="bg-muted/30 whitespace-nowrap">
               <TableRow className="border-border hover:bg-transparent">
-                <TableHead className="text-muted-foreground">Guest ID</TableHead>
-                <TableHead className="text-muted-foreground">Name</TableHead>
-                <TableHead className="text-muted-foreground">Phone</TableHead>
-                <TableHead className="text-muted-foreground">Email</TableHead>
-                <TableHead className="text-muted-foreground text-center">Total Stays</TableHead>
-                <TableHead className="text-muted-foreground text-right">Lifetime Value</TableHead>
+                <TableHead className="text-muted-foreground">ID</TableHead>
+                <TableHead className="text-muted-foreground">Magaca</TableHead>
+                <TableHead className="text-muted-foreground">Telefon</TableHead>
+                <TableHead className="text-muted-foreground">Iimeel</TableHead>
+                <TableHead className="text-muted-foreground text-center">Tirada Joogitaanka</TableHead>
+                <TableHead className="text-muted-foreground text-right">Qiimaha Guud</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -88,7 +88,7 @@ export default function GuestsPage() {
               {filteredGuests.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                    No guests found.
+                    Wax marti ah lama helin.
                   </TableCell>
                 </TableRow>
               )}

@@ -17,14 +17,14 @@ import { useHotel } from "@/app/context/HotelContext";
 import { Logo } from "@/components/ui/logo";
 
 const routes = [
-  { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
-  { label: "Billing", icon: ReceiptText, href: "/billing" },
-  { label: "Rooms", icon: BedDouble, href: "/rooms" },
-  { label: "Guests", icon: UsersRound, href: "/guests" },
-  { label: "Staff", icon: Users, href: "/staff" },
-  { label: "Expenses", icon: WalletCards, href: "/expenses" },
-  { label: "Profit", icon: LineChart, href: "/profit" },
-  { label: "Settings", icon: Settings, href: "/settings" },
+  { label: "Muraayadda", filterKey: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
+  { label: "Qaansheegta", filterKey: "Billing", icon: ReceiptText, href: "/billing" },
+  { label: "Qolalka", filterKey: "Rooms", icon: BedDouble, href: "/rooms" },
+  { label: "Martida", filterKey: "Guests", icon: UsersRound, href: "/guests" },
+  { label: "Shaqaalaha", filterKey: "Staff", icon: Users, href: "/staff" },
+  { label: "Kharashaadka", filterKey: "Expenses", icon: WalletCards, href: "/expenses" },
+  { label: "Macaashka", filterKey: "Profit", icon: LineChart, href: "/profit" },
+  { label: "Nidaaminta", filterKey: "Settings", icon: Settings, href: "/settings" },
 ];
 
 export function SidebarContent() {
@@ -32,8 +32,10 @@ export function SidebarContent() {
   const { hotelName, currentUserRole } = useHotel();
 
   const visibleRoutes = routes.filter(r => {
-    if (currentUserRole === "Staff" && (r.label === "Expenses" || r.label === "Profit")) {
-      return false;
+    if (currentUserRole !== "Manager" && currentUserRole !== "Admin") {
+      if (["Expenses", "Profit", "Staff", "Settings"].includes(r.filterKey)) {
+        return false;
+      }
     }
     return true;
   });
@@ -75,7 +77,7 @@ export function SidebarContent() {
       
       {/* Bottom branding */}
       <div className="px-5 py-4 border-t border-border/30">
-        <p className="text-[10px] text-muted-foreground/50 font-medium tracking-wider uppercase">Hotel Management v2.0</p>
+        <p className="text-[10px] text-muted-foreground/50 font-medium tracking-wider uppercase">Maamulka Huteelka v2.0</p>
       </div>
     </div>
   );

@@ -6,25 +6,34 @@ import { LayoutDashboard, BedDouble, ReceiptText, UsersRound, Plus } from "lucid
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
+import { useHotel } from "@/app/context/HotelContext";
 
 const navItems = [
-  { label: "Home", icon: LayoutDashboard, href: "/dashboard" },
-  { label: "Billing", icon: ReceiptText, href: "/billing" },
+  { label: "Guriga", icon: LayoutDashboard, href: "/dashboard" },
+  { label: "Biilka", icon: ReceiptText, href: "/billing" },
   // Center slot is the FAB
-  { label: "Rooms", icon: BedDouble, href: "/rooms" },
-  { label: "Guests", icon: UsersRound, href: "/guests" },
+  { label: "Qolalka", icon: BedDouble, href: "/rooms" },
+  { label: "Martida", icon: UsersRound, href: "/guests" },
 ];
 
 const quickActions = [
-  { label: "New Booking", href: "/billing?action=new", color: "bg-primary text-primary-foreground" },
-  { label: "Add Room", href: "/rooms?action=new", color: "bg-blue-500 text-white" },
-  { label: "Add Expense", href: "/expenses?action=new", color: "bg-rose-500 text-white" },
+  { label: "Bukayn Cusub", href: "/billing?action=new", color: "bg-primary text-primary-foreground" },
+  { label: "Kudar Qol", href: "/rooms?action=new", color: "bg-blue-500 text-white" },
+  { label: "Kharashaad Cusub", href: "/expenses?action=new", color: "bg-rose-500 text-white" },
 ];
 
 export function MobileNav() {
   const pathname = usePathname();
   const router = useRouter();
   const [fabOpen, setFabOpen] = useState(false);
+  const { currentUserRole } = useHotel();
+
+  const filteredQuickActions = quickActions.filter(action => {
+    if (currentUserRole !== "Manager" && currentUserRole !== "Admin") {
+      if (action.label === "Add Expense") return false;
+    }
+    return true;
+  });
 
   return (
     <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 pb-safe">
@@ -48,7 +57,7 @@ export function MobileNav() {
               transition={{ type: "spring", stiffness: 400, damping: 25 }}
               className="absolute bottom-[88px] left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-2.5"
             >
-              {quickActions.map((action, i) => (
+              {filteredQuickActions.map((action, i) => (
                 <motion.button
                   key={action.label}
                   initial={{ opacity: 0, scale: 0.8, y: 10 }}

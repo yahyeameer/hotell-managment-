@@ -13,7 +13,7 @@ import { useHotel, Room } from "@/app/context/HotelContext";
 import { motion } from "framer-motion";
 
 export default function RoomsPage() {
-  const { rooms, addRoom, deleteRoom, editRoom, bookings, guests } = useHotel();
+  const { rooms, addRoom, deleteRoom, editRoom, bookings, guests, endBooking } = useHotel();
   const [filter, setFilter] = useState<string>("All");
   const [open, setOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
@@ -101,17 +101,17 @@ export default function RoomsPage() {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight text-foreground">Rooms Management</h2>
-          <p className="text-muted-foreground text-sm">Manage room statuses and inventory.</p>
+          <h2 className="text-2xl font-bold tracking-tight text-foreground">Maamulka Qolalka</h2>
+          <p className="text-muted-foreground text-sm">Maamul heerka qolalka iyo tiradooda.</p>
         </div>
         
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger render={<Button className="font-medium w-full md:w-auto" />}>
-              <Plus className="w-4 h-4 mr-2" /> Add Room
+              <Plus className="w-4 h-4 mr-2" /> Kudar Qol
           </DialogTrigger>
           <DialogContent className="bg-background border-border text-foreground">
             <DialogHeader>
-              <DialogTitle>Add New Room(s)</DialogTitle>
+              <DialogTitle>Kudar Qol(al) Cusub</DialogTitle>
             </DialogHeader>
             <div className="flex gap-2 mt-4 bg-muted/40 p-1 rounded-md">
               <Button 
@@ -119,20 +119,20 @@ export default function RoomsPage() {
                 className="flex-1 h-8 text-xs" 
                 onClick={() => setAddMode("single")}
               >
-                Single Room
+                Hal Qol
               </Button>
               <Button 
                 variant={addMode === "bulk" ? "default" : "ghost"} 
                 className="flex-1 h-8 text-xs" 
                 onClick={() => setAddMode("bulk")}
               >
-                Bulk Add
+                Dhowr Qol
               </Button>
             </div>
             <form onSubmit={handleAddRoom} className="space-y-4 pt-4">
               {addMode === "single" ? (
                 <div className="space-y-2">
-                  <Label htmlFor="roomId">Room Number/ID</Label>
+                  <Label htmlFor="roomId">Tirsiga Qolka</Label>
                   <Input 
                     id="roomId" 
                     value={roomId} 
@@ -145,7 +145,7 @@ export default function RoomsPage() {
               ) : (
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="bulkCount">How many rooms?</Label>
+                    <Label htmlFor="bulkCount">Imisa Qol?</Label>
                     <Input 
                       id="bulkCount" 
                       type="number"
@@ -157,7 +157,7 @@ export default function RoomsPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="bulkStart">Starting Number</Label>
+                    <Label htmlFor="bulkStart">Lambar Ka Bilaaw</Label>
                     <Input 
                       id="bulkStart" 
                       type="number"
@@ -169,7 +169,7 @@ export default function RoomsPage() {
                     />
                   </div>
                   <div className="space-y-2 col-span-2">
-                    <Label htmlFor="bulkPrefix">Prefix (Optional)</Label>
+                    <Label htmlFor="bulkPrefix">Horgale (Ikhtiyaari)</Label>
                     <Input 
                       id="bulkPrefix" 
                       value={bulkPrefix} 
@@ -182,10 +182,10 @@ export default function RoomsPage() {
               )}
               
               <div className="space-y-2">
-                <Label htmlFor="roomType">Room Type</Label>
+                <Label htmlFor="roomType">Nooca Qolka</Label>
                 <Select value={roomType} onValueChange={(v) => setRoomType(v ?? "Hal Qol")}>
                   <SelectTrigger className="bg-muted/40 border-border focus-visible:ring-primary/50">
-                    <SelectValue placeholder="Select type" />
+                    <SelectValue placeholder="Dooro nooc" />
                   </SelectTrigger>
                   <SelectContent className="bg-background border-border text-foreground">
                     <SelectItem value="Hal Qol">Hal Qol (Single)</SelectItem>
@@ -196,7 +196,7 @@ export default function RoomsPage() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="roomPrice">Base Price (USD)</Label>
+                <Label htmlFor="roomPrice">Qiimaha Asalka (USD)</Label>
                 <Input 
                   id="roomPrice" 
                   type="number"
@@ -207,7 +207,7 @@ export default function RoomsPage() {
                 />
               </div>
               <Button type="submit" className="w-full">
-                {addMode === "single" ? "Save Room" : `Save ${bulkCount || 0} Rooms`}
+                {addMode === "single" ? "Keydi Qolka" : `Keydi ${bulkCount || 0} Qol`}
               </Button>
             </form>
           </DialogContent>
@@ -217,7 +217,7 @@ export default function RoomsPage() {
         <Dialog open={editOpen} onOpenChange={(o) => { if (!o) { setEditOpen(false); setEditingRoom(null); setEditRoomNumber(""); setConfirmDelete(false); } else { if (editingRoom) setEditRoomNumber(editingRoom.id); } }}>
           <DialogContent className="bg-background border-border text-foreground max-h-[95vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle className="text-lg font-bold">Room {editingRoom?.id} Details</DialogTitle>
+              <DialogTitle className="text-lg font-bold">Qolka {editingRoom?.id}</DialogTitle>
             </DialogHeader>
             {editingRoom && (
               <div className="space-y-4 pt-1">
@@ -226,22 +226,31 @@ export default function RoomsPage() {
                   const activeBooking = getRoomActiveBooking(editingRoom.id);
                   if (activeBooking) {
                     return (
-                      <div className="p-4 rounded-2xl bg-muted/40 border border-border/50 space-y-2">
-                        <h4 className="text-[10px] font-bold uppercase tracking-wider text-primary">Active Booking</h4>
+                      <div className="p-4 rounded-2xl bg-muted/40 border border-border/50 space-y-3">
+                        <h4 className="text-[10px] font-bold uppercase tracking-wider text-primary">Qofka Deggan</h4>
                         <div className="flex justify-between items-center">
                           <p className="font-semibold text-foreground text-sm">{activeBooking.guest}</p>
                           <Badge className="bg-primary/10 text-primary border-primary/25">{activeBooking.status}</Badge>
                         </div>
                         <div className="text-xs text-muted-foreground grid grid-cols-2 gap-2 pt-1 border-t border-border/20 mt-1">
                           <div>
-                            <span className="block text-[9px] text-muted-foreground/75 font-semibold">DURATION</span>
+                            <span className="block text-[9px] text-muted-foreground/75 font-semibold">MUDDADA</span>
                             <strong className="text-foreground">{calculateStayDuration(activeBooking.checkIn, activeBooking.checkOut)}</strong>
                           </div>
                           <div>
-                            <span className="block text-[9px] text-muted-foreground/75 font-semibold">CHECK OUT</span>
+                            <span className="block text-[9px] text-muted-foreground/75 font-semibold">WAQTIGA BIXIDA</span>
                             <strong className="text-foreground">{new Date(activeBooking.checkOut).toLocaleDateString()}</strong>
                           </div>
                         </div>
+                        <Button 
+                          type="button"
+                          onClick={() => {
+                            endBooking(activeBooking.id, editingRoom.id);
+                            setEditOpen(false);
+                          }}
+                          className="w-full mt-2" variant="destructive" size="sm">
+                          Ka Bixi Qolka (Check Out)
+                        </Button>
                       </div>
                     );
                   }
@@ -250,7 +259,7 @@ export default function RoomsPage() {
 
                 <form onSubmit={handleEditRoom} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="editRoomNumber">Room Number</Label>
+                    <Label htmlFor="editRoomNumber">Tirsiga Qolka</Label>
                     <Input 
                       id="editRoomNumber"
                       value={editRoomNumber || editingRoom.id} 
@@ -261,7 +270,7 @@ export default function RoomsPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="editType">Room Type</Label>
+                    <Label htmlFor="editType">Nooca Qolka</Label>
                     <Select 
                       value={editingRoom.type} 
                       onValueChange={(v) => setEditingRoom({ ...editingRoom, type: v || "" })}
@@ -278,7 +287,7 @@ export default function RoomsPage() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="editStatus">Status</Label>
+                    <Label htmlFor="editStatus">Xaaladda</Label>
                     <Select 
                       value={editingRoom.status} 
                       onValueChange={(v) => setEditingRoom({ ...editingRoom, status: (v || "Available") as Room["status"] })}
@@ -294,7 +303,7 @@ export default function RoomsPage() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="editPrice">Base Price (USD)</Label>
+                    <Label htmlFor="editPrice">Qiimaha Asalka (USD)</Label>
                     <Input 
                       id="editPrice"
                       type="number"
@@ -307,7 +316,7 @@ export default function RoomsPage() {
 
                   <div className="flex gap-2 pt-2">
                     <Button type="submit" className="flex-1">
-                      Save Changes
+                      Keydi Isbedelka
                     </Button>
                     
                     {!confirmDelete ? (
@@ -321,7 +330,7 @@ export default function RoomsPage() {
                       </Button>
                     ) : (
                       <div className="flex items-center gap-2 flex-1 animate-slide-up bg-rose-500/5 border border-rose-500/10 p-2 rounded-xl">
-                        <span className="text-[10px] text-rose-500 font-bold whitespace-nowrap">Sure?</span>
+                        <span className="text-[10px] text-rose-500 font-bold whitespace-nowrap">Hubtaa?</span>
                         <Button 
                           type="button" 
                           variant="destructive" 
@@ -334,7 +343,7 @@ export default function RoomsPage() {
                             setConfirmDelete(false);
                           }}
                         >
-                          Yes
+                          Haa
                         </Button>
                         <Button 
                           type="button" 
@@ -343,7 +352,7 @@ export default function RoomsPage() {
                           className="h-8 px-2.5 text-xs"
                           onClick={() => setConfirmDelete(false)}
                         >
-                          No
+                          Maya
                         </Button>
                       </div>
                     )}
@@ -361,28 +370,28 @@ export default function RoomsPage() {
           variant="outline" 
           className={`px-4 py-1.5 cursor-pointer whitespace-nowrap transition-all duration-300 active:scale-95 rounded-xl ${filter === "All" ? "bg-foreground/10 text-foreground border-foreground/20 shadow-sm" : "bg-muted/30 text-muted-foreground border-border/50 hover:bg-muted/50"}`}
         >
-          All Rooms ({rooms.length})
+          Dhamaan ({rooms.length})
         </Badge>
         <Badge 
           onClick={() => setFilter("Available")}
           variant="outline" 
           className={`px-4 py-1.5 cursor-pointer whitespace-nowrap transition-all duration-300 active:scale-95 rounded-xl ${filter === "Available" ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/25 shadow-sm" : "bg-emerald-500/5 text-emerald-600/60 dark:text-emerald-400/60 border-emerald-500/15 hover:bg-emerald-500/10"}`}
         >
-          Available ({availableCount})
+          Bannaan ({availableCount})
         </Badge>
         <Badge 
           onClick={() => setFilter("Occupied")}
           variant="outline" 
           className={`px-4 py-1.5 cursor-pointer whitespace-nowrap transition-all duration-300 active:scale-95 rounded-xl ${filter === "Occupied" ? "bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/25 shadow-sm" : "bg-rose-500/5 text-rose-600/60 dark:text-rose-400/60 border-rose-500/15 hover:bg-rose-500/10"}`}
         >
-          Occupied ({occupiedCount})
+          La Deggan Yahay ({occupiedCount})
         </Badge>
         <Badge 
           onClick={() => setFilter("Maintenance")}
           variant="outline" 
           className={`px-4 py-1.5 cursor-pointer whitespace-nowrap transition-all duration-300 active:scale-95 rounded-xl ${filter === "Maintenance" ? "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/25 shadow-sm" : "bg-amber-500/5 text-amber-600/60 dark:text-amber-400/60 border-amber-500/15 hover:bg-amber-500/10"}`}
         >
-          Maintenance ({maintenanceCount})
+          Ciladaysan ({maintenanceCount})
         </Badge>
       </div>
 
@@ -429,7 +438,7 @@ export default function RoomsPage() {
                   room.status === 'Occupied' ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20' : 
                   'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
                 }`}>
-                  {room.status}
+                  {room.status === 'Available' ? 'Bannaan' : room.status === 'Occupied' ? 'La Deggan Yahay' : 'Ciladaysan'}
                 </Badge>
               </CardContent>
             </Card>
@@ -438,7 +447,7 @@ export default function RoomsPage() {
         })}
         {filteredRooms.length === 0 && (
           <div className="col-span-full py-12 text-center text-muted-foreground">
-            No rooms found for this filter.
+            Wax qol ah lagama helin doorashadan.
           </div>
         )}
       </motion.div>

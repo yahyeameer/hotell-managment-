@@ -31,19 +31,19 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6 max-w-4xl">
       <div>
-        <h2 className="text-2xl font-bold tracking-tight text-foreground">Hotel Settings</h2>
-        <p className="text-muted-foreground text-sm">Manage hotel branding, currency, and general configuration.</p>
+        <h2 className="text-2xl font-bold tracking-tight text-foreground">Nidaaminta Huteelka</h2>
+        <p className="text-muted-foreground text-sm">Maamul astaanta, lacagta, iyo qaabeynta guud ee huteelka.</p>
       </div>
 
       <div className="grid gap-6">
         <Card className="glass border-border/30 bg-card/40">
           <CardHeader>
-            <CardTitle className="text-foreground">Branding</CardTitle>
-            <CardDescription>Update your hotel's name and logo.</CardDescription>
+            <CardTitle className="text-foreground">Astaanta (Branding)</CardTitle>
+            <CardDescription>Cusboonaysii magaca iyo summada huteelka.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="hotel-name" className="text-foreground">Hotel Name</Label>
+              <Label htmlFor="hotel-name" className="text-foreground">Magaca Huteelka</Label>
               <Input 
                 id="hotel-name" 
                 value={localName}
@@ -53,7 +53,7 @@ export default function SettingsPage() {
             </div>
             
             <div className="space-y-2">
-              <Label className="text-foreground">Hotel Logo</Label>
+              <Label className="text-foreground">Summada Huteelka (Logo)</Label>
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                 <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center shrink-0 border border-primary/30 overflow-hidden shadow-sm">
                   {localLogo ? (
@@ -63,7 +63,7 @@ export default function SettingsPage() {
                   )}
                 </div>
                 <Label className="cursor-pointer inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-transparent hover:bg-secondary hover:text-secondary-foreground h-10 px-4 py-2 w-full sm:w-auto">
-                  Upload New Logo
+                  Soo Geli Summad Cusub
                   <input 
                     type="file" 
                     className="hidden" 
@@ -87,40 +87,40 @@ export default function SettingsPage() {
 
         <Card className="glass border-border/30 bg-card/40">
           <CardHeader>
-            <CardTitle className="text-foreground">Role Management</CardTitle>
-            <CardDescription>Create and manage staff roles and their permissions.</CardDescription>
+            <CardTitle className="text-foreground">Maamulka Doorarka</CardTitle>
+            <CardDescription>Samee oo maamul doorarka shaqaalaha iyo oggolaanshahooda.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="font-semibold text-foreground">Current Roles</h3>
+              <h3 className="font-semibold text-foreground">Doorarka Hadda Jira</h3>
               
               <Dialog>
                 <DialogTrigger render={<Button size="sm" variant="outline" className="border-primary text-primary hover:bg-primary/10" />}>
-                    + Generate New Role
+                    + Samee Door Cusub
                 </DialogTrigger>
                 <DialogContent className="bg-background border-border text-foreground">
                   <DialogHeader>
-                    <DialogTitle>Generate New Role</DialogTitle>
+                    <DialogTitle>Samee Door Cusub</DialogTitle>
                   </DialogHeader>
                   <div className="space-y-4 pt-4">
                     <div className="space-y-2">
-                      <Label htmlFor="role-name">Role Name</Label>
-                      <Input id="role-name" placeholder="e.g. Assistant Manager" className="bg-muted/40 border-border focus-visible:ring-primary/50" />
+                      <Label htmlFor="role-name">Magaca Doorka</Label>
+                      <Input id="role-name" placeholder="tusaale. Kaaliyaha Maamulaha" className="bg-muted/40 border-border focus-visible:ring-primary/50" />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="role-desc">Description</Label>
-                      <Input id="role-desc" placeholder="Brief description of responsibilities" className="bg-muted/40 border-border focus-visible:ring-primary/50" />
+                      <Label htmlFor="role-desc">Faahfaahin</Label>
+                      <Input id="role-desc" placeholder="Faahfaahin kooban ee shaqada" className="bg-muted/40 border-border focus-visible:ring-primary/50" />
                     </div>
                     <div className="space-y-2">
-                      <Label>Permissions</Label>
+                      <Label>Oggolaanshaha</Label>
                       <div className="grid grid-cols-2 gap-2 mt-2">
-                        <label className="flex items-center gap-2 text-sm"><input type="checkbox" className="rounded border-primary" /> Manage Staff</label>
-                        <label className="flex items-center gap-2 text-sm"><input type="checkbox" className="rounded border-primary" /> Edit Bookings</label>
-                        <label className="flex items-center gap-2 text-sm"><input type="checkbox" className="rounded border-primary" /> View Reports</label>
-                        <label className="flex items-center gap-2 text-sm"><input type="checkbox" className="rounded border-primary" /> Manage Rooms</label>
+                        <label className="flex items-center gap-2 text-sm"><input type="checkbox" className="rounded border-primary" /> Maamul Shaqaale</label>
+                        <label className="flex items-center gap-2 text-sm"><input type="checkbox" className="rounded border-primary" /> Wax Ka Bedel Bukaynaha</label>
+                        <label className="flex items-center gap-2 text-sm"><input type="checkbox" className="rounded border-primary" /> Arag Warbixinaha</label>
+                        <label className="flex items-center gap-2 text-sm"><input type="checkbox" className="rounded border-primary" /> Maamul Qolalka</label>
                       </div>
                     </div>
-                    <Button className="w-full  mt-2">Save Role & Permissions</Button>
+                    <Button className="w-full  mt-2">Keydi Doorka & Oggolaanshaha</Button>
                   </div>
                 </DialogContent>
               </Dialog>
@@ -128,16 +128,16 @@ export default function SettingsPage() {
             
             <div className="space-y-3">
               {[
-                { name: "Manager", desc: "Full system access including reports and staff management" },
-                { name: "Receptionist", desc: "Can manage bookings, guests, and payments" },
-                { name: "Housekeeping", desc: "Can view and update room statuses" }
+                { name: "Manager", desc: "Helitaan buuxa oo ay ku jiraan warbixinaha iyo maamulka shaqaalaha" },
+                { name: "Receptionist", desc: "Wuxuu maamuli karaa bukaynaha, martida, iyo lacag bixinta" },
+                { name: "Housekeeping", desc: "Wuxuu arki karaa oo cusboonaysiin karaa xaaladaha qolalka" }
               ].map((role) => (
                 <div key={role.name} className="flex items-center justify-between p-3.5 rounded-xl border border-border/30 bg-muted/20 hover:bg-muted/30 transition-colors duration-300">
                   <div>
                     <p className="font-medium text-foreground">{role.name}</p>
                     <p className="text-xs text-muted-foreground">{role.desc}</p>
                   </div>
-                  <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">Edit</Button>
+                  <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">Bedel</Button>
                 </div>
               ))}
             </div>
@@ -146,13 +146,13 @@ export default function SettingsPage() {
 
         <Card className="glass border-border/30 bg-card/40">
           <CardHeader>
-            <CardTitle className="text-foreground">Financial Configuration</CardTitle>
-            <CardDescription>Manage currency settings and exchange rates.</CardDescription>
+            <CardTitle className="text-foreground">Qaabeynta Maaliyadda</CardTitle>
+            <CardDescription>Maamul nidaamka lacagta iyo sicirka sarrifka.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="primary-currency" className="text-foreground">Primary Currency</Label>
+                <Label htmlFor="primary-currency" className="text-foreground">Lacagta Aasaasiga Ah</Label>
                 <select 
                   id="primary-currency" 
                   value={localCurrency}
@@ -164,7 +164,7 @@ export default function SettingsPage() {
                 </select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="exchange-rate" className="text-foreground">Exchange Rate (1 USD = X SOS)</Label>
+                <Label htmlFor="exchange-rate" className="text-foreground">Sicirka Sarrifka (1 USD = X SOS)</Label>
                 <Input 
                   id="exchange-rate" 
                   type="number" 
@@ -179,21 +179,21 @@ export default function SettingsPage() {
 
         <Card className="glass border-border bg-muted/20">
           <CardHeader>
-            <CardTitle className="text-foreground">Contact Information</CardTitle>
-            <CardDescription>Hotel contact details for receipts and invoices.</CardDescription>
+            <CardTitle className="text-foreground">Macluumaadka Xiriirka</CardTitle>
+            <CardDescription>Faahfaahinta xiriirka huteelka ee loogu talagalay rasiidhyada.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-foreground">Email Address</Label>
+                <Label htmlFor="email" className="text-foreground">Ciwaanka Iimeelka</Label>
                 <Input id="email" type="email" defaultValue="info@hargeisagrand.com" className="bg-muted/40 border-border text-foreground focus-visible:ring-primary/50" />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="phone" className="text-foreground">Phone Number</Label>
+                <Label htmlFor="phone" className="text-foreground">Telefon Lambarka</Label>
                 <Input id="phone" defaultValue="+252 63 1234567" className="bg-muted/40 border-border text-foreground focus-visible:ring-primary/50" />
               </div>
               <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="address" className="text-foreground">Address</Label>
+                <Label htmlFor="address" className="text-foreground">Ciwaanka (Address)</Label>
                 <Input id="address" defaultValue="Road 1, Hargeisa, Somaliland" className="bg-muted/40 border-border text-foreground focus-visible:ring-primary/50" />
               </div>
             </div>
@@ -207,13 +207,13 @@ export default function SettingsPage() {
             setLocalRate(exchangeRate.toString());
             setLocalLogo(logoUrl);
           }}>
-            Cancel
+            Jooji
           </Button>
           <Button 
             onClick={handleSave} 
             className={`font-semibold transition-all duration-500 ${isSaved ? 'bg-emerald-500 hover:bg-emerald-600 shadow-[0_4px_14px_rgba(16,185,129,0.3)]' : ''}`}
           >
-            {isSaved ? "Saved Successfully!" : "Save Changes"}
+            {isSaved ? "Waa La Keydiyay!" : "Keydi Isbedelka"}
           </Button>
         </div>
       </div>

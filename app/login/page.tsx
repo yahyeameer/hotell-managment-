@@ -20,10 +20,10 @@ export default async function LoginPage(props: { searchParams: Promise<{ message
           <Logo hotelName="Hargeisa Grand Hotel" iconSize="lg" showText={false} className="mx-auto mb-1" />
           <div>
             <CardTitle className="text-2xl sm:text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-br from-foreground via-foreground/90 to-primary/70">
-              Welcome Back
+              Soo Dhawoow
             </CardTitle>
             <CardDescription className="text-muted-foreground mt-2">
-              Sign in to the Hotel Management System
+              Gal Nidaamka Maamulka Huteelka
             </CardDescription>
           </div>
         </CardHeader>
@@ -36,7 +36,7 @@ export default async function LoginPage(props: { searchParams: Promise<{ message
           <form action={login} className="space-y-5">
             <div className="space-y-2">
               <label htmlFor="email" className="text-sm font-medium text-foreground/80 leading-none">
-                Email
+                Iimeelka
               </label>
               <Input
                 id="email"
@@ -60,11 +60,11 @@ export default async function LoginPage(props: { searchParams: Promise<{ message
               />
             </div>
             <Button type="submit" size="lg" className="w-full mt-1 font-semibold text-base">
-              Sign In
+              Gal
             </Button>
           </form>
           <p className="text-center text-[11px] text-muted-foreground/50 mt-6">
-            Hargeisa Grand Hotel · Management System v2.0
+            Hargeisa Grand Hotel · Nidaamka Maamulka v2.0
           </p>
         </CardContent>
       </Card>

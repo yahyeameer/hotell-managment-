@@ -124,11 +124,11 @@ export default function BillingPage() {
     const now = new Date();
     const diffHours = (due.getTime() - now.getTime()) / (1000 * 60 * 60);
     if (diffHours < 0) {
-      return <span className="text-[10px] text-red-500 font-bold ml-2">Overdue!</span>;
+      return <span className="text-[10px] text-red-500 font-bold ml-2">Wakhtigu Dhamaday!</span>;
     } else if (diffHours < 24) {
-      return <span className="text-[10px] text-orange-500 font-bold ml-2">Due Soon</span>;
+      return <span className="text-[10px] text-orange-500 font-bold ml-2">Dhow Ayuu Yahay</span>;
     }
-    return <span className="text-[10px] text-muted-foreground ml-2">Due in {Math.ceil(diffHours/24)}d</span>;
+    return <span className="text-[10px] text-muted-foreground ml-2">{Math.ceil(diffHours/24)} maalin</span>;
   };
 
   // Duration display helper
@@ -172,21 +172,21 @@ export default function BillingPage() {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">Billing & Bookings</h2>
-          <p className="text-muted-foreground text-xs sm:text-sm">Manage guest bookings, payments, and receipts.</p>
+          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">Qaansheegta & Bukaynaha</h2>
+          <p className="text-muted-foreground text-xs sm:text-sm">Maamul bukaynaha, lacag bixinta, iyo rasiidhka.</p>
         </div>
         
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger render={<Button className="font-medium w-full md:w-auto" />}>
-              <Plus className="w-4 h-4 mr-2" /> New Booking
+              <Plus className="w-4 h-4 mr-2" /> Bukayn Cusub
           </DialogTrigger>
           <DialogContent className="bg-background border-border text-foreground max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Create New Booking</DialogTitle>
+              <DialogTitle>Samee Bukayn Cusub</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleAddBooking} className="space-y-4 pt-4">
               <div className="space-y-2">
-                <Label htmlFor="guestName">Guest Name</Label>
+                <Label htmlFor="guestName">Magaca Martida</Label>
                 <Input 
                   id="guestName" 
                   value={guestName} 
@@ -196,7 +196,7 @@ export default function BillingPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="guestPhone">Guest Phone</Label>
+                <Label htmlFor="guestPhone">Telefon Martida</Label>
                 <Input 
                   id="guestPhone" 
                   type="tel"
@@ -207,26 +207,26 @@ export default function BillingPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="roomId">Assign Room</Label>
+                <Label htmlFor="roomId">Qol U Qoondo</Label>
                 <Select value={roomId} onValueChange={(v) => setRoomId(v ?? "")}>
                   <SelectTrigger className="bg-muted/40 border-border focus-visible:ring-primary/50">
-                    <SelectValue placeholder="Select available room" />
+                    <SelectValue placeholder="Dooro qol bannaan" />
                   </SelectTrigger>
                   <SelectContent className="bg-background border-border text-foreground">
                     {rooms.filter(r => r.status === "Available").map(room => (
                       <SelectItem key={room.id} value={room.id}>
-                        Room {room.id} - {room.type} (${room.price}/night)
+                        Qol {room.id} - {room.type} (${room.price}/habeen)
                       </SelectItem>
                     ))}
                     {rooms.filter(r => r.status === "Available").length === 0 && (
-                      <div className="p-2 text-sm text-muted-foreground text-center">No rooms available</div>
+                      <div className="p-2 text-sm text-muted-foreground text-center">Wax qol bannaan ah ma jiraan</div>
                     )}
                   </SelectContent>
                 </Select>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="checkIn">Check In</Label>
+                  <Label htmlFor="checkIn">Soo Galitaanka</Label>
                   <Input 
                     id="checkIn" 
                     type="datetime-local"
@@ -237,7 +237,7 @@ export default function BillingPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="checkOut">Check Out</Label>
+                  <Label htmlFor="checkOut">Ka Bixida</Label>
                   <Input 
                     id="checkOut" 
                     type="datetime-local"
@@ -252,14 +252,14 @@ export default function BillingPage() {
               {/* Duration Display */}
               {checkIn && checkOut && calculateDuration(checkIn, checkOut) && (
                 <div className="p-3 rounded-xl bg-primary/5 border border-primary/15 text-center">
-                  <p className="text-[10px] uppercase tracking-wider text-primary/70 font-semibold">Stay Duration</p>
+                  <p className="text-[10px] uppercase tracking-wider text-primary/70 font-semibold">Muddada Joogitaanka</p>
                   <p className="text-lg font-black text-primary">{calculateDuration(checkIn, checkOut)}</p>
                 </div>
               )}
 
               {/* Payment Method Selection */}
               <div className="space-y-2">
-                <Label>Payment Method</Label>
+                <Label>Habka Lacag Bixinta</Label>
                 <div className="grid grid-cols-3 gap-2">
                   {PAYMENT_METHODS.map(pm => (
                     <button
@@ -285,7 +285,7 @@ export default function BillingPage() {
 
               {/* Currency */}
               <div className="space-y-2">
-                <Label>Currency</Label>
+                <Label>Lacagta</Label>
                 <div className="grid grid-cols-2 gap-2">
                   {(["USD", "SOS"] as const).map(cur => (
                     <button
@@ -298,14 +298,14 @@ export default function BillingPage() {
                           : "border-border bg-muted/20 text-muted-foreground hover:bg-muted/40"
                       }`}
                     >
-                      {cur === "USD" ? "💵 US Dollar" : "💰 Somali Shilling"}
+                      {cur === "USD" ? "💵 US Dollar" : "💰 Shilin Soomaaliyeed"}
                     </button>
                   ))}
                 </div>
               </div>
 
               <Button type="submit" className="w-full" disabled={!roomId}>
-                Confirm Booking
+                Xaqiiji Bukaynta
               </Button>
             </form>
           </DialogContent>
@@ -315,17 +315,17 @@ export default function BillingPage() {
       <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3">
         <div className="glass p-3 sm:p-4 rounded-xl border border-border bg-muted/20 relative overflow-hidden group hover:bg-muted/30 transition-colors">
           <div className="absolute -right-4 -top-4 w-16 h-16 bg-primary/20 rounded-full blur-2xl group-hover:bg-primary/30 transition-all duration-500" />
-          <h3 className="text-xs text-muted-foreground mb-1 font-medium tracking-wide">Total Bookings</h3>
+          <h3 className="text-xs text-muted-foreground mb-1 font-medium tracking-wide">Wadarta Bukaynaha</h3>
           <p className="text-xl sm:text-3xl font-black text-foreground drop-shadow-sm">{bookings.length}</p>
         </div>
         <div className="glass p-3 sm:p-4 rounded-xl border border-border bg-muted/20 relative overflow-hidden group hover:bg-muted/30 transition-colors">
           <div className="absolute -right-4 -top-4 w-16 h-16 bg-green-500/20 rounded-full blur-2xl group-hover:bg-green-500/30 transition-all duration-500" />
-          <h3 className="text-xs text-muted-foreground mb-1 font-medium tracking-wide">Total Revenue</h3>
+          <h3 className="text-xs text-muted-foreground mb-1 font-medium tracking-wide">Wadarta Dakhliga</h3>
           <p className="text-xl sm:text-3xl font-black text-foreground drop-shadow-sm">{formatCurrency(bookings.reduce((sum, b) => sum + toUSD(b.amount, b.currency), 0))}</p>
         </div>
         <div className="glass p-3 sm:p-4 rounded-xl border border-border bg-muted/20 col-span-2 md:col-span-1 relative overflow-hidden group hover:bg-muted/30 transition-colors">
           <div className="absolute -right-4 -top-4 w-16 h-16 bg-blue-500/20 rounded-full blur-2xl group-hover:bg-blue-500/30 transition-all duration-500" />
-          <h3 className="text-xs text-muted-foreground mb-1 font-medium tracking-wide">Pending</h3>
+          <h3 className="text-xs text-muted-foreground mb-1 font-medium tracking-wide">Sugaya</h3>
           <p className="text-xl sm:text-3xl font-black text-foreground drop-shadow-sm">{bookings.filter(b => b.status === "Pending").length}</p>
         </div>
       </div>
@@ -335,7 +335,7 @@ export default function BillingPage() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input 
-              placeholder="Search bookings..." 
+              placeholder="Raadi bukaynaha..." 
               value={search}
               onChange={e => setSearch(e.target.value)}
               className="pl-9 bg-muted/40 border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-primary/50" 
@@ -356,7 +356,7 @@ export default function BillingPage() {
                     </div>
                     <div>
                       <p className="font-semibold text-foreground text-sm">{booking.guest}</p>
-                      <p className="text-xs text-muted-foreground">Room {booking.room}</p>
+                      <p className="text-xs text-muted-foreground">Qol {booking.room}</p>
                     </div>
                   </div>
                   <div className="text-right flex flex-col items-end">
@@ -444,7 +444,7 @@ export default function BillingPage() {
             );
           })}
           {filteredBookings.length === 0 && (
-            <div className="text-center py-12 text-muted-foreground text-sm">No bookings found.</div>
+            <div className="text-center py-12 text-muted-foreground text-sm">Wax bukayn ah lama helin.</div>
           )}
         </div>
 
@@ -453,14 +453,14 @@ export default function BillingPage() {
           <Table>
             <TableHeader className="bg-muted/40 whitespace-nowrap">
               <TableRow className="border-border hover:bg-transparent">
-                <TableHead className="text-muted-foreground">Guest</TableHead>
-                <TableHead className="text-muted-foreground">Room</TableHead>
-                <TableHead className="text-muted-foreground">Check In</TableHead>
-                <TableHead className="text-muted-foreground">Check Out</TableHead>
-                <TableHead className="text-muted-foreground">Payment</TableHead>
-                <TableHead className="text-muted-foreground text-right">Amount</TableHead>
-                <TableHead className="text-muted-foreground text-center">Status</TableHead>
-                <TableHead className="text-muted-foreground text-right">Actions</TableHead>
+                <TableHead className="text-muted-foreground">Martida</TableHead>
+                <TableHead className="text-muted-foreground">Qolka</TableHead>
+                <TableHead className="text-muted-foreground">Soo Galitaanka</TableHead>
+                <TableHead className="text-muted-foreground">Ka Bixida</TableHead>
+                <TableHead className="text-muted-foreground">Lacag Bixinta</TableHead>
+                <TableHead className="text-muted-foreground text-right">Qadarka</TableHead>
+                <TableHead className="text-muted-foreground text-center">Xaaladda</TableHead>
+                <TableHead className="text-muted-foreground text-right">Ficilada</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -559,7 +559,7 @@ export default function BillingPage() {
               {filteredBookings.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
-                    No bookings found.
+                    Wax bukayn ah lama helin.
                   </TableCell>
                 </TableRow>
               )}
@@ -599,7 +599,7 @@ export default function BillingPage() {
                 ))}
               </div>
               <div className="space-y-2 pt-2 border-t border-border/30">
-                <Label htmlFor="customPromiseDate" className="text-xs text-muted-foreground">Custom Date</Label>
+                <Label htmlFor="customPromiseDate" className="text-xs text-muted-foreground">Taariikh Gaar ah</Label>
                 <div className="flex gap-2">
                   <Input
                     id="customPromiseDate"
@@ -619,14 +619,14 @@ export default function BillingPage() {
                     onClick={() => handleConfirmPromiseToPay(0)}
                     disabled={!customPromiseDate}
                   >
-                    Save
+                    Keydi
                   </Button>
                 </div>
               </div>
             </div>
             <DialogFooter showCloseButton>
               <Button variant="outline" className="w-full sm:w-auto" onClick={() => setPromisePaymentBooking(null)}>
-                Cancel
+                Jooji
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -638,11 +638,11 @@ export default function BillingPage() {
         <Dialog open={editBookingOpen} onOpenChange={(o) => { if (!o) { setEditBookingOpen(false); setEditingBooking(null); } }}>
           <DialogContent className="bg-background border-border text-foreground max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Edit Booking</DialogTitle>
+              <DialogTitle>Wax Ka Bedel Bukaynta</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleEditBooking} className="space-y-4 pt-2">
               <div className="space-y-2">
-                <Label htmlFor="editGuest">Guest Name</Label>
+                <Label htmlFor="editGuest">Magaca Martida</Label>
                 <Input 
                   id="editGuest"
                   value={editingBooking.guest} 
@@ -652,7 +652,7 @@ export default function BillingPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="editRoom">Room</Label>
+                <Label htmlFor="editRoom">Qolka</Label>
                 <Select value={editingBooking.room} onValueChange={(v) => setEditingBooking({...editingBooking, room: v || editingBooking.room})}>
                   <SelectTrigger className="bg-muted/40 border-border focus-visible:ring-primary/50">
                     <SelectValue />
@@ -660,7 +660,7 @@ export default function BillingPage() {
                   <SelectContent className="bg-background border-border text-foreground">
                     {rooms.map(room => (
                       <SelectItem key={room.id} value={room.id}>
-                        Room {room.id} - {room.type} ({room.status})
+                        Qol {room.id} - {room.type} ({room.status})
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -668,7 +668,7 @@ export default function BillingPage() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="editCheckIn">Check In</Label>
+                  <Label htmlFor="editCheckIn">Soo Galitaanka</Label>
                   <Input 
                     id="editCheckIn" 
                     type="datetime-local"
@@ -679,7 +679,7 @@ export default function BillingPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="editCheckOut">Check Out</Label>
+                  <Label htmlFor="editCheckOut">Ka Bixida</Label>
                   <Input 
                     id="editCheckOut" 
                     type="datetime-local"
@@ -694,13 +694,13 @@ export default function BillingPage() {
               {/* Duration Display */}
               {editingBooking.checkIn && editingBooking.checkOut && calculateDuration(editingBooking.checkIn, editingBooking.checkOut) && (
                 <div className="p-3 rounded-xl bg-primary/5 border border-primary/15 text-center">
-                  <p className="text-[10px] uppercase tracking-wider text-primary/70 font-semibold">Stay Duration</p>
+                  <p className="text-[10px] uppercase tracking-wider text-primary/70 font-semibold">Muddada Joogitaanka</p>
                   <p className="text-lg font-black text-primary">{calculateDuration(editingBooking.checkIn, editingBooking.checkOut)}</p>
                 </div>
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="editAmount">Amount</Label>
+                <Label htmlFor="editAmount">Qadarka</Label>
                 <Input 
                   id="editAmount"
                   type="number"
@@ -713,7 +713,7 @@ export default function BillingPage() {
 
               {/* Payment Method */}
               <div className="space-y-2">
-                <Label>Payment Method</Label>
+                <Label>Habka Lacag Bixinta</Label>
                 <div className="grid grid-cols-3 gap-2">
                   {PAYMENT_METHODS.map(pm => (
                     <button
@@ -738,7 +738,7 @@ export default function BillingPage() {
               </div>
 
               <div className="flex gap-2 pt-2">
-                <Button type="submit" className="flex-1">Save Changes</Button>
+                <Button type="submit" className="flex-1">Keydi Isbedelka</Button>
                 <Button 
                   type="button" 
                   variant="outline" 
@@ -749,7 +749,7 @@ export default function BillingPage() {
                     setEditingBooking(null);
                   }}
                 >
-                  <Trash2 className="w-4 h-4 mr-1.5" /> Delete
+                  <Trash2 className="w-4 h-4 mr-1.5" /> Tirtir
                 </Button>
               </div>
             </form>

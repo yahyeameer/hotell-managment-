@@ -32,7 +32,7 @@ export type Expense = {
   currency: "USD" | "SOS";
 };
 export type Guest = { id: string; name: string; phone: string; email: string; totalStays: number; lifetimeValue: number };
-export type Staff = { id: string; name: string; role: string; phone: string; status: "Active" | "Off Duty"; shift: string };
+export type Staff = { id: string; userId?: string; name: string; role: string; phone: string; status: "Active" | "Off Duty"; shift: string };
 
 interface HotelContextType {
   hotelName: string;
@@ -162,6 +162,15 @@ export function HotelProvider({ children }: { children: React.ReactNode }) {
       if (!cachedData) setIsLoading(true);
       
       try {
+        // Fetch Current User Role
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: myStaffRow } = await supabase.from('staff').select('role').eq('user_id', user.id).single();
+          if (myStaffRow && !cancelled) {
+            setCurrentUserRole(myStaffRow.role as any);
+          }
+        }
+
         // Fetch Hotel Settings
         const { data: hotelData, error: hotelError } = await supabase
           .from('hotels').select('*').eq('id', HOTEL_ID).single();
@@ -240,6 +249,7 @@ export function HotelProvider({ children }: { children: React.ReactNode }) {
         if (!cancelled && staffData) {
           setStaff(staffData.map(s => ({
             id: s.id,
+            userId: s.user_id,
             name: s.full_name,
             role: s.role || "Receptionist",
             phone: s.phone || "",
@@ -460,6 +470,7 @@ export function HotelProvider({ children }: { children: React.ReactNode }) {
     setStaff(prev => [employee, ...prev]);
     const { error } = await supabase.from('staff').insert({
       hotel_id: HOTEL_ID,
+      user_id: employee.userId,
       full_name: employee.name,
       role: employee.role,
       phone: employee.phone || null,

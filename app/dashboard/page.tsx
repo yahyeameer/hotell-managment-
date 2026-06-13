@@ -62,9 +62,9 @@ export default function DashboardPage() {
 
   // Room status data for pie
   const roomStatusData = [
-    { name: "Available", value: rooms.filter(r => r.status === "Available").length, color: "#22c55e" },
-    { name: "Occupied", value: rooms.filter(r => r.status === "Occupied").length, color: "#ef4444" },
-    { name: "Maintenance", value: rooms.filter(r => r.status === "Maintenance").length, color: "#f59e0b" },
+    { name: "Bannaan", value: rooms.filter(r => r.status === "Available").length, color: "#22c55e" },
+    { name: "La Deggan Yahay", value: rooms.filter(r => r.status === "Occupied").length, color: "#ef4444" },
+    { name: "Ciladaysan", value: rooms.filter(r => r.status === "Maintenance").length, color: "#f59e0b" },
   ].filter(d => d.value > 0);
 
   return (
@@ -78,9 +78,9 @@ export default function DashboardPage() {
       <motion.div variants={itemVariants} className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div>
           <h2 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-foreground bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/60">
-            Dashboard
+            Muraayadda
           </h2>
-          <p className="text-muted-foreground text-xs sm:text-sm mt-1">Welcome back to {hotelName}.</p>
+          <p className="text-muted-foreground text-xs sm:text-sm mt-1">Ku soo dhawoow {hotelName}.</p>
         </div>
         <div className="flex items-center gap-2">
           <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 px-2 py-1 text-xs">
@@ -101,7 +101,7 @@ export default function DashboardPage() {
             className={`cursor-pointer px-3 py-1.5 transition-colors ${currentUserRole === 'Admin' ? 'bg-primary/20 text-primary border-primary/50' : 'bg-muted text-muted-foreground'}`}
             onClick={() => setCurrentUserRole(currentUserRole === 'Admin' ? 'Staff' : 'Admin')}
           >
-            {currentUserRole} View
+            {currentUserRole} Muuqaal
           </Badge>
         </div>
       </motion.div>
@@ -109,10 +109,10 @@ export default function DashboardPage() {
       {/* Stat Cards - Horizontal scroll on mobile, Grid on desktop */}
       <div className="flex overflow-x-auto scrollbar-hide snap-x snap-mandatory gap-3 pb-3 sm:pb-0 sm:grid sm:grid-cols-2 lg:grid-cols-4 sm:gap-4 -mx-3 px-3 sm:mx-0 sm:px-0 w-[calc(100%+1.5rem)] sm:w-full">
         {[
-          { title: "Revenue", icon: CreditCard, value: formatCurrency(totalRevenue), sub: `${(totalRevenue * exchangeRate).toLocaleString()} SOS`, color: "text-primary", bg: "bg-primary/10" },
-          { title: "Guests", icon: Users, value: activeGuests.toString(), sub: "Total registered", color: "text-blue-500", bg: "bg-blue-500/10" },
-          { title: "Occupancy", icon: BedDouble, value: `${occupancyRate}%`, sub: `${occupiedRooms}/${rooms.length} rooms`, color: "text-primary", bg: "bg-primary/10", progress: true },
-          { title: "Net Profit", icon: TrendingUp, value: formatCurrency(netProfit), sub: netProfit >= 0 ? "Profitable" : "Loss", color: netProfit >= 0 ? "text-primary" : "text-destructive", bg: netProfit >= 0 ? "bg-primary/10" : "bg-destructive/10", adminOnly: true }
+          { title: "Dakhliga", icon: CreditCard, value: formatCurrency(totalRevenue), sub: `${(totalRevenue * exchangeRate).toLocaleString()} SOS`, color: "text-primary", bg: "bg-primary/10" },
+          { title: "Martida", icon: Users, value: activeGuests.toString(), sub: "Wadarta la diiwaan geliyay", color: "text-blue-500", bg: "bg-blue-500/10" },
+          { title: "Buuxinta", icon: BedDouble, value: `${occupancyRate}%`, sub: `${occupiedRooms}/${rooms.length} qol`, color: "text-primary", bg: "bg-primary/10", progress: true },
+          { title: "Macaashka", icon: TrendingUp, value: formatCurrency(netProfit), sub: netProfit >= 0 ? "Faa'iido" : "Khasaare", color: netProfit >= 0 ? "text-primary" : "text-destructive", bg: netProfit >= 0 ? "bg-primary/10" : "bg-destructive/10", adminOnly: true }
         ].filter(stat => !(stat.adminOnly && currentUserRole === 'Staff')).map((stat, i) => (
           <motion.div 
             key={i} 
@@ -159,7 +159,7 @@ export default function DashboardPage() {
               <CardHeader className="pb-2">
                 <CardTitle className="text-foreground text-sm sm:text-base flex items-center gap-2">
                   <span className="w-2 h-6 bg-primary rounded-full" />
-                  Payment Methods
+                  Habka Lacag Bixinta
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -184,7 +184,7 @@ export default function DashboardPage() {
                           </Pie>
                           <Tooltip 
                             contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px', color: 'hsl(var(--foreground))' }}
-                            formatter={(value) => [`$${value}`, 'Revenue']}
+                            formatter={(value) => [`$${value}`, 'Dakhli']}
                           />
                         </PieChart>
                       </ResponsiveContainer>
@@ -206,7 +206,7 @@ export default function DashboardPage() {
                   </div>
                 ) : (
                   <div className="h-44 flex items-center justify-center text-muted-foreground text-sm">
-                    No bookings yet. Create one to see analytics.
+                    Wali ma jiraan bukaynno. Samee mid si aad u aragto falanqeynta.
                   </div>
                 )}
               </CardContent>
@@ -219,7 +219,7 @@ export default function DashboardPage() {
               <CardHeader className="pb-2">
                 <CardTitle className="text-foreground text-sm sm:text-base flex items-center gap-2">
                   <span className="w-2 h-6 bg-blue-500 rounded-full" />
-                  Weekly Revenue
+                  Dakhliga Usbuuca
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -231,7 +231,7 @@ export default function DashboardPage() {
                       <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} axisLine={false} tickLine={false} width={35} />
                       <Tooltip 
                         contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px', color: 'hsl(var(--foreground))' }}
-                        formatter={(value) => [`$${value}`, 'Revenue']}
+                        formatter={(value) => [`$${value}`, 'Dakhli']}
                       />
                       <Bar dataKey="amount" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
                     </BarChart>
@@ -249,7 +249,7 @@ export default function DashboardPage() {
           <Card className="glass border-border/50 bg-muted/20 h-full shadow-lg">
             <CardHeader>
               <CardTitle className="text-foreground text-sm sm:text-base flex items-center gap-2">
-                <span className="w-2 h-6 bg-primary rounded-full" /> Recent Bookings
+                <span className="w-2 h-6 bg-primary rounded-full" /> Bukaynaha Dhowaa
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -271,7 +271,7 @@ export default function DashboardPage() {
                         <div className="min-w-0">
                           <p className="text-sm font-medium text-foreground truncate">{booking.guest}</p>
                           <p className="text-xs text-muted-foreground">
-                            Room {booking.room} · {pm?.icon} {pm?.label}
+                            Qol {booking.room} · {pm?.icon} {pm?.label}
                           </p>
                         </div>
                       </div>
@@ -285,7 +285,7 @@ export default function DashboardPage() {
                   );
                 })}
                 {bookings.length === 0 && (
-                  <div className="text-center py-8 text-muted-foreground text-sm">No recent bookings found.</div>
+                  <div className="text-center py-8 text-muted-foreground text-sm">Wali lama helin bukayn dhow.</div>
                 )}
               </div>
             </CardContent>
@@ -296,7 +296,7 @@ export default function DashboardPage() {
           <Card className="glass border-border/50 bg-muted/20 h-full shadow-lg">
             <CardHeader>
               <CardTitle className="text-foreground text-sm sm:text-base flex items-center gap-2">
-                <span className="w-2 h-6 bg-blue-500 rounded-full" /> Room Status
+                <span className="w-2 h-6 bg-blue-500 rounded-full" /> Xaaladda Qolalka
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -329,14 +329,14 @@ export default function DashboardPage() {
                           <div className="w-3 h-3 rounded-full" style={{ backgroundColor: status.color }} />
                           <span className="text-xs text-foreground">{status.name}</span>
                         </div>
-                        <span className="text-xs font-bold text-foreground">{status.value} rooms</span>
+                        <span className="text-xs font-bold text-foreground">{status.value} qol</span>
                       </div>
                     ))}
                   </div>
                 </div>
               ) : (
                 <div className="h-36 flex items-center justify-center text-muted-foreground text-sm">
-                  Add rooms to see status breakdown.
+                  Kudar qolal si aad u aragto xaaladda.
                 </div>
               )}
             </CardContent>

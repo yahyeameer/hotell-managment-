@@ -38,7 +38,7 @@ export default function ExpensesPage() {
   
   const highestCategory = Object.keys(categoryTotals).length > 0 
     ? Object.keys(categoryTotals).reduce((a, b) => categoryTotals[a] > categoryTotals[b] ? a : b)
-    : "None";
+    : "Midna";
 
   const handleAddExpense = (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,20 +67,20 @@ export default function ExpensesPage() {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">Expenses</h2>
-          <p className="text-muted-foreground text-xs sm:text-sm">Monitor daily hotel operations costs.</p>
+          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">Kharashaadka</h2>
+          <p className="text-muted-foreground text-xs sm:text-sm">La soco kharashaadka maalinlaha ah ee huteelka.</p>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger render={<Button className="font-medium w-full md:w-auto" />}>
-              <Plus className="w-4 h-4 mr-2" /> Record Expense
+              <Plus className="w-4 h-4 mr-2" /> Diiwaangeli Kharash
           </DialogTrigger>
           <DialogContent className="bg-background border-border text-foreground max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Record New Expense</DialogTitle>
+              <DialogTitle>Diiwaangeli Kharash Cusub</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleAddExpense} className="space-y-4 pt-4">
               <div className="space-y-2">
-                <Label htmlFor="date">Date</Label>
+                <Label htmlFor="date">Taariikhda</Label>
                 <Input 
                   id="date" type="date" value={date} 
                   onChange={e => setDate(e.target.value)} required 
@@ -88,19 +88,19 @@ export default function ExpensesPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
+                <Label htmlFor="description">Faahfaahin</Label>
                 <Input 
                   id="description" value={description} 
-                  onChange={e => setDescription(e.target.value)} required placeholder="e.g. Plumbing repairs"
+                  onChange={e => setDescription(e.target.value)} required placeholder="tusaale. Dayactirka dhuumaha"
                   className="bg-muted/40 border-border focus-visible:ring-primary/50"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="category">Category</Label>
+                  <Label htmlFor="category">Nooca</Label>
                   <Select value={category} onValueChange={(v) => setCategory(v ?? "Utilities")}>
                     <SelectTrigger className="bg-muted/40 border-border focus-visible:ring-primary/50">
-                      <SelectValue placeholder="Category" />
+                      <SelectValue placeholder="Nooca" />
                     </SelectTrigger>
                     <SelectContent className="bg-background border-border text-foreground">
                       <SelectItem value="Utilities">Utilities</SelectItem>
@@ -114,7 +114,7 @@ export default function ExpensesPage() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="amount">Amount</Label>
+                  <Label htmlFor="amount">Qadarka</Label>
                   <Input 
                     id="amount" type="number" value={amount} 
                     onChange={e => setAmount(e.target.value)} required placeholder="0.00"
@@ -125,7 +125,7 @@ export default function ExpensesPage() {
 
               {/* Payment Method */}
               <div className="space-y-2">
-                <Label>Paid Via</Label>
+                <Label>Habka Lacag Bixinta</Label>
                 <div className="grid grid-cols-3 gap-2">
                   {PAYMENT_METHODS.map(pm => (
                     <button
@@ -167,7 +167,7 @@ export default function ExpensesPage() {
               </div>
 
               <Button type="submit" className="w-full">
-                Save Expense
+                Keydi Kharashka
               </Button>
             </form>
           </DialogContent>
@@ -177,21 +177,21 @@ export default function ExpensesPage() {
       <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3">
         <div className="glass p-3 sm:p-4 rounded-xl border border-border bg-muted/20 relative overflow-hidden group hover:bg-muted/30 transition-colors">
           <div className="absolute -right-4 -top-4 w-16 h-16 bg-rose-500/20 rounded-full blur-2xl group-hover:bg-rose-500/30 transition-all duration-500" />
-          <h3 className="text-xs text-muted-foreground mb-1 font-medium tracking-wide">Total This Month</h3>
+          <h3 className="text-xs text-muted-foreground mb-1 font-medium tracking-wide">Wadarta Bishan</h3>
           <p className="text-xl sm:text-3xl font-black text-foreground drop-shadow-sm">{formatCurrency(totalThisMonth)}</p>
           <p className="text-[10px] text-muted-foreground mt-1">{(totalThisMonth * exchangeRate).toLocaleString()} SOS</p>
         </div>
         <div className="glass p-3 sm:p-4 rounded-xl border border-border bg-muted/20 relative overflow-hidden group hover:bg-muted/30 transition-colors">
           <div className="absolute -right-4 -top-4 w-16 h-16 bg-amber-500/20 rounded-full blur-2xl group-hover:bg-amber-500/30 transition-all duration-500" />
-          <h3 className="text-xs text-muted-foreground mb-1 font-medium tracking-wide">Highest Category</h3>
+          <h3 className="text-xs text-muted-foreground mb-1 font-medium tracking-wide">Nooca Ugu Badan</h3>
           <p className="text-xl sm:text-3xl font-black text-foreground drop-shadow-sm">{highestCategory}</p>
           <p className="text-[10px] text-muted-foreground mt-1">{formatCurrency(categoryTotals[highestCategory] || 0)}</p>
         </div>
         <div className="glass p-3 sm:p-4 rounded-xl border border-border bg-muted/20 col-span-2 md:col-span-1 relative overflow-hidden group hover:bg-muted/30 transition-colors">
           <div className="absolute -right-4 -top-4 w-16 h-16 bg-primary/20 rounded-full blur-2xl group-hover:bg-primary/30 transition-all duration-500" />
-          <h3 className="text-xs text-muted-foreground mb-1 font-medium tracking-wide">Total Entries</h3>
+          <h3 className="text-xs text-muted-foreground mb-1 font-medium tracking-wide">Wadarta Diiwaanka</h3>
           <p className="text-xl sm:text-3xl font-black text-foreground drop-shadow-sm">{expenses.length}</p>
-          <p className="text-[10px] text-muted-foreground mt-1">{Object.keys(categoryTotals).length} categories</p>
+          <p className="text-[10px] text-muted-foreground mt-1">{Object.keys(categoryTotals).length} nooc</p>
         </div>
       </div>
 
@@ -200,7 +200,7 @@ export default function ExpensesPage() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input 
-              placeholder="Search expenses..." value={search}
+              placeholder="Raadi kharashaadka..." value={search}
               onChange={e => setSearch(e.target.value)}
               className="pl-9 bg-muted/40 border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-primary/50" 
             />
@@ -235,7 +235,7 @@ export default function ExpensesPage() {
             );
           })}
           {filteredExpenses.length === 0 && (
-            <div className="text-center py-12 text-muted-foreground text-sm">No expenses recorded.</div>
+            <div className="text-center py-12 text-muted-foreground text-sm">Wali wax kharash ah lama diiwaangelin.</div>
           )}
         </div>
 
@@ -244,11 +244,11 @@ export default function ExpensesPage() {
           <Table>
             <TableHeader className="bg-muted/40 whitespace-nowrap">
               <TableRow className="border-border hover:bg-transparent">
-                <TableHead className="text-muted-foreground">Date</TableHead>
-                <TableHead className="text-muted-foreground">Description</TableHead>
-                <TableHead className="text-muted-foreground">Category</TableHead>
-                <TableHead className="text-muted-foreground">Paid Via</TableHead>
-                <TableHead className="text-muted-foreground text-right">Amount</TableHead>
+                <TableHead className="text-muted-foreground">Taariikhda</TableHead>
+                <TableHead className="text-muted-foreground">Faahfaahin</TableHead>
+                <TableHead className="text-muted-foreground">Nooca</TableHead>
+                <TableHead className="text-muted-foreground">Lacag Bixinta</TableHead>
+                <TableHead className="text-muted-foreground text-right">Qadarka</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -278,7 +278,7 @@ export default function ExpensesPage() {
               {filteredExpenses.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                    No expenses recorded.
+                    Wali wax kharash ah lama diiwaangelin.
                   </TableCell>
                 </TableRow>
               )}

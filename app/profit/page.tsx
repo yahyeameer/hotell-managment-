@@ -92,8 +92,8 @@ export default function ProfitPage() {
       className="space-y-5"
     >
       <motion.div variants={itemVariants}>
-        <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">Profit & Loss</h2>
-        <p className="text-muted-foreground text-xs sm:text-sm">Financial performance and payment analytics.</p>
+        <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">Faa'iidada & Khasaaraha</h2>
+        <p className="text-muted-foreground text-xs sm:text-sm">Falanqaynta maaliyadda iyo lacag bixinta.</p>
       </motion.div>
 
       {/* Top Stat Cards */}
@@ -101,7 +101,7 @@ export default function ProfitPage() {
         <motion.div variants={itemVariants}>
           <Card className="glass border-emerald-500/20 bg-emerald-500/5 overflow-hidden relative">
             <CardHeader className="flex flex-row items-center justify-between pb-1">
-              <CardTitle className="text-xs sm:text-sm font-medium text-emerald-600 dark:text-emerald-400">Revenue</CardTitle>
+              <CardTitle className="text-xs sm:text-sm font-medium text-emerald-600 dark:text-emerald-400">Dakhliga</CardTitle>
               <div className="w-8 h-8 rounded-xl bg-emerald-500/10 flex items-center justify-center">
                 <ArrowUpRight className="w-4 h-4 text-emerald-500" />
               </div>
@@ -118,7 +118,7 @@ export default function ProfitPage() {
         <motion.div variants={itemVariants}>
           <Card className="glass border-rose-500/20 bg-rose-500/5 overflow-hidden relative">
             <CardHeader className="flex flex-row items-center justify-between pb-1">
-              <CardTitle className="text-xs sm:text-sm font-medium text-rose-600 dark:text-rose-400">Expenses</CardTitle>
+              <CardTitle className="text-xs sm:text-sm font-medium text-rose-600 dark:text-rose-400">Kharashaadka</CardTitle>
               <div className="w-8 h-8 rounded-xl bg-rose-500/10 flex items-center justify-center">
                 <ArrowDownRight className="w-4 h-4 text-rose-500" />
               </div>
@@ -135,7 +135,7 @@ export default function ProfitPage() {
         <motion.div variants={itemVariants} className="col-span-2 md:col-span-1">
           <Card className="glass border-border/30 bg-card/40 overflow-hidden relative">
             <CardHeader className="flex flex-row items-center justify-between pb-1">
-              <CardTitle className="text-xs sm:text-sm font-medium text-foreground">Net Profit</CardTitle>
+              <CardTitle className="text-xs sm:text-sm font-medium text-foreground">Macaashka Safiican</CardTitle>
               <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
                 <DollarSign className="w-4 h-4 text-primary" />
               </div>
@@ -149,7 +149,7 @@ export default function ProfitPage() {
                 <div className="h-full bg-destructive transition-all duration-700" style={{ width: `${100 - Math.max(margin, 0)}%` }} />
               </div>
               <div className="flex justify-between mt-1 text-[10px] text-muted-foreground">
-                <span>Margin: {margin}%</span>
+                <span>Dulsaarka: {margin}%</span>
                 <span>{(netProfit * exchangeRate).toLocaleString()} SOS</span>
               </div>
             </CardContent>
@@ -165,7 +165,7 @@ export default function ProfitPage() {
             <CardHeader className="pb-2">
               <CardTitle className="text-foreground text-sm sm:text-base flex items-center gap-2">
                 <span className="w-2 h-6 bg-gradient-to-b from-primary to-destructive rounded-full" />
-                Revenue vs Expenses
+                Dakhliga vs Kharashaadka
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -186,8 +186,8 @@ export default function ProfitPage() {
                     <XAxis dataKey="day" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} axisLine={false} tickLine={false} />
                     <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} axisLine={false} tickLine={false} width={35} />
                     <Tooltip {...tooltipStyle} formatter={(value) => [`$${value}`, '']} />
-                    <Area type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" fill="url(#revGrad)" strokeWidth={2} name="Revenue" />
-                    <Area type="monotone" dataKey="expenses" stroke="#ef4444" fill="url(#expGrad)" strokeWidth={2} name="Expenses" />
+                    <Area type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" fill="url(#revGrad)" strokeWidth={2} name="Dakhliga" />
+                    <Area type="monotone" dataKey="expenses" stroke="#ef4444" fill="url(#expGrad)" strokeWidth={2} name="Kharashaadka" />
                     <Legend iconType="circle" wrapperStyle={{ fontSize: '11px' }} />
                   </AreaChart>
                 </ResponsiveContainer>
@@ -202,7 +202,7 @@ export default function ProfitPage() {
             <CardHeader className="pb-2">
               <CardTitle className="text-foreground text-sm sm:text-base flex items-center gap-2">
                 <span className="w-2 h-6 bg-primary rounded-full" />
-                Revenue by Payment
+                Dakhliga Habka Lacag Bixinta
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -214,7 +214,7 @@ export default function ProfitPage() {
                         <Pie data={revenueByMethod} cx="50%" cy="50%" innerRadius="55%" outerRadius="85%" dataKey="value" strokeWidth={2} stroke="hsl(var(--background))">
                           {revenueByMethod.map((entry, i) => <Cell key={i} fill={entry.color} />)}
                         </Pie>
-                        <Tooltip {...tooltipStyle} formatter={(value) => [`$${value}`, 'Revenue']} />
+                        <Tooltip {...tooltipStyle} formatter={(value) => [`$${value}`, 'Dakhli']} />
                       </PieChart>
                     </ResponsiveContainer>
                   </div>
@@ -232,7 +232,7 @@ export default function ProfitPage() {
                 </div>
               ) : (
                 <div className="h-44 flex items-center justify-center text-muted-foreground text-sm">
-                  No payment data yet.
+                  Wali xogta lacag bixinta lama hayo.
                 </div>
               )}
             </CardContent>
@@ -248,7 +248,7 @@ export default function ProfitPage() {
             <CardHeader className="pb-2">
               <CardTitle className="text-foreground text-sm sm:text-base flex items-center gap-2">
                 <span className="w-2 h-6 bg-destructive rounded-full" />
-                Expenses by Category
+                Kharashaadka Noocyada
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -268,7 +268,7 @@ export default function ProfitPage() {
                 </div>
               ) : (
                 <div className="h-48 flex items-center justify-center text-muted-foreground text-sm">
-                  No expense data yet.
+                  Wali xogta kharashaadka lama hayo.
                 </div>
               )}
             </CardContent>
@@ -281,7 +281,7 @@ export default function ProfitPage() {
             <CardHeader className="pb-2">
               <CardTitle className="text-foreground text-sm sm:text-base flex items-center gap-2">
                 <span className="w-2 h-6 bg-blue-500 rounded-full" />
-                Currency & Summary
+                Lacagaha & Soo-koobid
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -300,7 +300,7 @@ export default function ProfitPage() {
                     {currencySplit.map((c, i) => (
                       <div key={i} className="flex items-center gap-2">
                         <div className="w-3 h-3 rounded-full" style={{ backgroundColor: c.color }} />
-                        <span className="text-xs text-foreground">{c.name}: {c.value} bookings</span>
+                        <span className="text-xs text-foreground">{c.name}: {c.value} bukayn</span>
                       </div>
                     ))}
                   </div>
@@ -309,23 +309,23 @@ export default function ProfitPage() {
               
               <div className="space-y-2 pt-2 border-t border-border/30">
                 <div className="flex justify-between text-xs">
-                  <span className="text-muted-foreground">Total Bookings</span>
+                  <span className="text-muted-foreground">Wadarta Bukaynaha</span>
                   <span className="font-bold text-foreground">{bookings.length}</span>
                 </div>
                 <div className="flex justify-between text-xs">
-                  <span className="text-muted-foreground">Total Expenses</span>
+                  <span className="text-muted-foreground">Wadarta Kharashaadka</span>
                   <span className="font-bold text-foreground">{expenses.length}</span>
                 </div>
                 <div className="flex justify-between text-xs">
-                  <span className="text-muted-foreground">Paid Bookings</span>
+                  <span className="text-muted-foreground">Bukaynaha La Bixiyay</span>
                   <span className="font-bold text-primary">{bookings.filter(b => b.status === "Paid").length}</span>
                 </div>
                 <div className="flex justify-between text-xs">
-                  <span className="text-muted-foreground">Pending Bookings</span>
+                  <span className="text-muted-foreground">Bukaynaha Sugaya</span>
                   <span className="font-bold text-secondary">{bookings.filter(b => b.status === "Pending").length}</span>
                 </div>
                 <div className="flex justify-between text-xs pt-2 border-t border-border/30">
-                  <span className="text-muted-foreground">Exchange Rate</span>
+                  <span className="text-muted-foreground">Sicirka Sarrifka</span>
                   <span className="font-bold text-foreground">$1 = {exchangeRate.toLocaleString()} SOS</span>
                 </div>
               </div>
